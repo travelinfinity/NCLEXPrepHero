@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>NextGen Nurses | NCLEX-RN Interactive Prep — 100 QBank Pro</title>
+  <title>NextGen Nurses | NCLEX-RN Interactive Prep — 200 QBank Pro</title>
   <meta name="description" content="NCLEX-RN practice questions with visual mnemonics, pathophysiology rationales, and a lab values cheat sheet." />
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -328,9 +328,9 @@
                 <p class="text-xs text-emerald-400 font-semibold mt-1">$49.99 every 3 months • $0.55 a day</p>
               </div>
               <ul class="space-y-2 text-xs text-slate-200 pt-2 border-t border-slate-800">
-                <li>✔ 100 High-Yield Pro NCLEX Questions & NGN</li>
-                <li>✔ Visual Mnemonic Vault (100 Flashcards)</li>
-                <li>✔ Step-by-Step Pathophysiology Rationales</li>
+                <li>✔ 200 High-Yield NCLEX-Style Questions (incl. Select-All-That-Apply)</li>
+                <li>✔ Visual Mnemonic Vault (200 Flashcards)</li>
+                <li>✔ Option-by-Option Rationales + Back-to-Basics Fundamentals</li>
                 <li>✔ Expanded Lab Values & 5 Deadly Labs Cheat Sheet</li>
                 <li>✔ Money-back pass guarantee</li>
               </ul>
@@ -352,9 +352,9 @@
                 <p class="text-xs text-slate-400 mt-1">$24.99 a month</p>
               </div>
               <ul class="space-y-2 text-xs text-slate-200 pt-2 border-t border-slate-800">
-                <li>✔ 100 High-Yield Pro NCLEX Questions & NGN</li>
-                <li>✔ Visual Mnemonic Vault (100 Flashcards)</li>
-                <li>✔ Step-by-Step Pathophysiology Rationales</li>
+                <li>✔ 200 High-Yield NCLEX-Style Questions (incl. Select-All-That-Apply)</li>
+                <li>✔ Visual Mnemonic Vault (200 Flashcards)</li>
+                <li>✔ Option-by-Option Rationales + Back-to-Basics Fundamentals</li>
                 <li>✔ Expanded Lab Values & 5 Deadly Labs Cheat Sheet</li>
                 <li class="text-slate-500">✖ No money-back guarantee</li>
               </ul>
@@ -436,7 +436,7 @@
   </div>
 
   <!-- ========================================================================= -->
-  <!-- PART 2: FULL 100-QUESTION NCLEX-RN PRO SIMULATOR DASHBOARD                -->
+  <!-- PART 2: FULL NCLEX-RN PRO SIMULATOR DASHBOARD                             -->
   <!-- ========================================================================= -->
   <div id="app-dashboard" class="hidden min-h-screen flex flex-col bg-slate-950">
     <!-- TOP NAVIGATION BAR -->
@@ -458,10 +458,10 @@
         <!-- Mode Switcher -->
         <nav class="flex flex-wrap items-center gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800">
           <button onclick="switchTab('simulator')" id="tab-simulator" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all bg-indigo-600 text-white shadow">
-            Exam Simulator (100)
+            Exam Simulator (200)
           </button>
           <button onclick="switchTab('vault')" id="tab-vault" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all text-slate-400 hover:text-white">
-            Mnemonic Vault (100)
+            Mnemonic Vault (200)
           </button>
           <button onclick="switchTab('labs')" id="tab-labs" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all text-slate-400 hover:text-white">
             Lab Values & Deadly Labs
@@ -493,19 +493,19 @@
       <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
         <div class="flex flex-wrap items-center gap-1.5">
           <button onclick="setCategory('ALL')" id="cat-ALL" class="cat-btn px-3 py-1 rounded-lg text-xs font-semibold bg-indigo-500/20 text-indigo-300 border border-indigo-500/40">
-            All Categories (100)
+            All Categories (200)
           </button>
           <button onclick="setCategory('Med-Surg')" id="cat-Med-Surg" class="cat-btn px-3 py-1 rounded-lg text-xs font-semibold bg-slate-800/70 text-slate-400 hover:text-white border border-slate-700/60">
-            Med-Surg (25)
+            Med-Surg (50)
           </button>
           <button onclick="setCategory('Pharmacology')" id="cat-Pharmacology" class="cat-btn px-3 py-1 rounded-lg text-xs font-semibold bg-slate-800/70 text-slate-400 hover:text-white border border-slate-700/60">
-            Pharmacology (25)
+            Pharmacology (50)
           </button>
           <button onclick="setCategory('OB & Peds')" id="cat-OB" class="cat-btn px-3 py-1 rounded-lg text-xs font-semibold bg-slate-800/70 text-slate-400 hover:text-white border border-slate-700/60">
-            Maternal & Peds (25)
+            Maternal & Peds (50)
           </button>
           <button onclick="setCategory('Prioritization & Fundamentals')" id="cat-Prio" class="cat-btn px-3 py-1 rounded-lg text-xs font-semibold bg-slate-800/70 text-slate-400 hover:text-white border border-slate-700/60">
-            Prioritization & Fundamentals (25)
+            Prioritization & Fundamentals (50)
           </button>
           <button onclick="setCategory('FLAGGED')" id="cat-FLAGGED" class="cat-btn px-3 py-1 rounded-lg text-xs font-semibold bg-slate-800/70 text-slate-400 hover:text-white border border-slate-700/60">
             ★ Flagged (<span id="flag-count">0</span>)
@@ -517,6 +517,17 @@
 
         <div class="flex items-center gap-2">
           <span id="set-progress" class="text-xs text-slate-400 mr-2"></span>
+          <select id="need-filter" onchange="setNeed(this.value)" title="Filter by NCLEX Client Needs category" class="bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-slate-200 focus:outline-none focus:border-indigo-500">
+            <option value="ALL">All Client Needs</option>
+            <option>Management of Care</option>
+            <option>Safety and Infection Control</option>
+            <option>Health Promotion and Maintenance</option>
+            <option>Psychosocial Integrity</option>
+            <option>Basic Care and Comfort</option>
+            <option>Pharmacological and Parenteral Therapies</option>
+            <option>Reduction of Risk Potential</option>
+            <option>Physiological Adaptation</option>
+          </select>
           <label class="text-xs text-slate-400">Jump to Q:</label>
           <select id="question-jumper" onchange="jumpToQuestion(this.value)" class="bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-slate-200 focus:outline-none focus:border-indigo-500"></select>
           <button onclick="resetProgress()" class="text-xs text-rose-400 hover:text-rose-300 px-2 py-1 rounded border border-rose-500/30 bg-rose-500/10">
@@ -537,7 +548,7 @@
           <div class="flex items-center justify-between gap-2 pb-4 mb-4 border-b border-slate-800">
             <div class="flex flex-wrap items-center gap-2">
               <span id="q-number-badge" class="font-mono text-xs font-bold px-2.5 py-1 rounded-md bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
-                Q1 / 100
+                Q1
               </span>
               <span id="q-category-badge" class="text-xs font-semibold px-2.5 py-1 rounded-md bg-teal-500/15 text-teal-300 border border-teal-500/30">
                 Med-Surg
@@ -545,6 +556,7 @@
               <span id="q-type-badge" class="text-xs font-semibold px-2.5 py-1 rounded-md bg-amber-500/15 text-amber-300 border border-amber-500/30">
                 Single Best Answer
               </span>
+              <span id="q-need-badge" class="hidden text-xs font-semibold px-2.5 py-1 rounded-md bg-sky-500/15 text-sky-300 border border-sky-500/30"></span>
             </div>
             <button onclick="toggleBookmark()" id="bookmark-btn" class="text-xs px-2.5 py-1 rounded-lg border border-slate-700 text-slate-400 hover:text-amber-300 hover:border-amber-400 transition">
               ★ Flag
@@ -630,12 +642,24 @@
               <p id="rationale-core" class="text-sm text-slate-200 leading-relaxed"></p>
               <div id="rationale-framework" class="p-3.5 rounded-xl bg-slate-950/80 border border-slate-800 text-xs text-slate-300 space-y-1.5"></div>
               <div class="text-xs font-bold uppercase tracking-wider text-slate-400 pt-2">
-                Answer Key
+                Why Each Option Is Right or Wrong
               </div>
               <div id="rationale-options" class="space-y-2 text-xs pt-1"></div>
             </div>
 
-            <!-- 3. BEDSIDE TEACHING & NCLEX EXAM TRAP -->
+            <!-- 3. BACK TO BASICS: FUNDAMENTAL KNOWLEDGE -->
+            <div id="fundamentals-card" class="hidden bg-sky-950/30 border border-sky-500/40 rounded-2xl p-5 space-y-3">
+              <div class="text-xs font-bold uppercase tracking-wider text-sky-300">
+                📚 Back to Basics: The Fundamentals Behind This Question
+              </div>
+              <p id="fundamentals-body" class="text-sm text-sky-100/90 leading-relaxed"></p>
+              <div id="related-wrap" class="hidden pt-1">
+                <div class="text-[11px] font-bold uppercase tracking-wider text-sky-300/80 mb-1.5">Practice related questions</div>
+                <div id="related-links" class="flex flex-wrap gap-2"></div>
+              </div>
+            </div>
+
+            <!-- 4. BEDSIDE TEACHING & NCLEX EXAM TRAP -->
             <div class="bg-amber-950/30 border border-amber-500/40 rounded-2xl p-5">
               <div class="text-xs font-bold uppercase tracking-wider text-amber-300 mb-1.5">
                 🩺 Bedside Nursing Teaching & NCLEX Exam Trap
@@ -647,7 +671,7 @@
         </div>
       </section>
 
-      <!-- VIEW 2: MNEMONIC VAULT (ALL 100 SEARCHABLE) -->
+      <!-- VIEW 2: MNEMONIC VAULT (ALL SEARCHABLE) -->
       <section id="view-vault" class="hidden space-y-5">
         <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 flex flex-wrap items-center justify-between gap-4">
           <div>
@@ -783,7 +807,7 @@
                 <p class="text-xs text-emerald-400 font-semibold mt-1">$49.99 billed every 3 months</p>
               </div>
               <ul class="space-y-2 text-xs text-slate-300 border-t border-slate-800 pt-3">
-                <li>✔ 100 High-Yield Pro NCLEX Questions & Vault</li>
+                <li>✔ 200 High-Yield NCLEX Questions & Mnemonic Vault</li>
                 <li>✔ Expanded Lab Values & Deadly Labs Guide</li>
                 <li>✔ 100% Pass Money-Back Guarantee</li>
               </ul>
@@ -803,7 +827,7 @@
                 <p class="text-xs text-slate-400 font-semibold mt-1">Billed monthly • Cancel anytime</p>
               </div>
               <ul class="space-y-2 text-xs text-slate-300 border-t border-slate-800 pt-3">
-                <li>✔ 100 High-Yield Pro NCLEX Questions & Vault</li>
+                <li>✔ 200 High-Yield NCLEX Questions & Mnemonic Vault</li>
                 <li>✔ Expanded Lab Values & Deadly Labs Guide</li>
                 <li class="text-slate-500">✖ No money-back guarantee</li>
               </ul>
@@ -957,7 +981,7 @@
 
       const pw = document.getElementById('auth-password');
       const copy = {
-        login:   ['Student Portal Login', 'Log in to unlock all 100 NCLEX-RN questions.', 'Log In & Unlock Simulator →'],
+        login:   ['Student Portal Login', 'Log in to unlock all 200 NCLEX-RN questions.', 'Log In & Unlock Simulator →'],
         signup:  ['Create Your Student Account', 'Set up your login to start practicing.', 'Create Account →'],
         reset:   ['Reset Your Password', "Enter your email and we'll send you a reset link.", 'Send Reset Link →'],
         newpass: ['Choose a New Password', 'Enter a new password for your account.', 'Save New Password →']
@@ -1074,7 +1098,7 @@
       document.getElementById('funnel-wrapper').classList.add('hidden');
       document.getElementById('app-dashboard').classList.remove('hidden');
       if (username) {
-        document.getElementById('logged-in-welcome').textContent = `Logged in as: ${username} • 100 QBank Pro Active`;
+        document.getElementById('logged-in-welcome').textContent = `Logged in as: ${username} • QBank Pro Active`;
       }
       window.scrollTo(0, 0);
       startTimer();
@@ -1150,7 +1174,7 @@
     function loadQuestions() {
       if (!questionsPromise) {
         questionsPromise = sb.from('questions')
-          .select('id, category, topic, type, stem, options, correct, mnemonic_title, mnemonic_body, rationale, teaching')
+          .select('id, category, topic, type, stem, options, correct, mnemonic_title, mnemonic_body, rationale, teaching, option_rationales, fundamentals, client_need, related')
           .order('id')
           .then(({ data, error }) => {
             if (error) throw error;
@@ -1165,7 +1189,11 @@
               mnemonicTitle: r.mnemonic_title || '',
               mnemonicBody: r.mnemonic_body || '',
               rationale: r.rationale || '',
-              teaching: r.teaching || ''
+              teaching: r.teaching || '',
+              optionRationales: Array.isArray(r.option_rationales) ? r.option_rationales : [],
+              fundamentals: r.fundamentals || '',
+              clientNeed: r.client_need || '',
+              related: Array.isArray(r.related) ? r.related : []
             }));
             updateCategoryCounts();
             return QUESTIONS;
@@ -1258,17 +1286,29 @@
       'FLAGGED': 'cat-FLAGGED', 'MISSED': 'cat-MISSED'
     };
 
+    let activeNeed = 'ALL';
+    function setNeed(need) {
+      const previous = activeNeed;
+      activeNeed = need;
+      if (!setCategory(activeCategory)) {
+        activeNeed = previous;
+        document.getElementById('need-filter').value = previous;
+      }
+    }
+
     function setCategory(cat) {
       let list;
       if (cat === 'ALL') list = [...QUESTIONS];
       else if (cat === 'FLAGGED') list = QUESTIONS.filter(q => userStats.bookmarks.includes(q.id));
       else if (cat === 'MISSED') list = QUESTIONS.filter(q => userStats.answered[q.id] === false);
       else list = QUESTIONS.filter(q => q.category === cat);
+      if (activeNeed !== 'ALL') list = list.filter(q => q.clientNeed === activeNeed);
 
       if (list.length === 0) {
-        alert(cat === 'FLAGGED' ? 'No flagged questions yet. Use ☆ Flag on any question to save it here.'
-                                : 'No missed questions yet. Nice work!');
-        return;
+        alert(activeNeed !== 'ALL' ? `No questions match "${activeNeed}" in this set yet.`
+            : cat === 'FLAGGED' ? 'No flagged questions yet. Use ☆ Flag on any question to save it here.'
+            : 'No missed questions yet. Nice work!');
+        return false;
       }
       activeCategory = cat;
       document.querySelectorAll('.cat-btn').forEach(btn => {
@@ -1285,6 +1325,7 @@
       populateJumper();
       renderCurrentQuestion();
       updateSetProgress();
+      return true;
     }
 
     function populateJumper() {
@@ -1321,6 +1362,9 @@
       document.getElementById('q-category-badge').textContent = q.category;
       document.getElementById('q-type-badge').textContent = q.type === 'sata' ? 'SATA (Select All That Apply)' : 'Single Best Answer';
       document.getElementById('q-topic').textContent = q.topic;
+      const needBadge = document.getElementById('q-need-badge');
+      needBadge.textContent = q.clientNeed;
+      needBadge.classList.toggle('hidden', !q.clientNeed);
       document.getElementById('q-stem').textContent = q.stem;
 
       const prev = userStats.answered[q.id];
@@ -1485,6 +1529,17 @@
       document.getElementById('rationale-core').textContent = q.rationale;
       document.getElementById('teaching-body').textContent = q.teaching;
 
+      // Back to Basics + related questions
+      const fCard = document.getElementById('fundamentals-card');
+      fCard.classList.toggle('hidden', !q.fundamentals);
+      document.getElementById('fundamentals-body').textContent = q.fundamentals;
+      const related = (q.related || []).map(id => QUESTIONS.find(x => x.id === id)).filter(Boolean);
+      document.getElementById('related-wrap').classList.toggle('hidden', related.length === 0);
+      document.getElementById('related-links').innerHTML = related.map(r => {
+        const mark = userStats.answered[r.id] === true ? '✓ ' : (userStats.answered[r.id] === false ? '✗ ' : '');
+        return `<button onclick="goToQuestion(${r.id})" class="text-[11px] font-semibold px-2.5 py-1 rounded-lg bg-sky-500/10 border border-sky-500/30 text-sky-200 hover:bg-sky-500/20 text-left">${mark}Q${r.id}: ${escapeHTML(r.topic)}</button>`;
+      }).join('');
+
       const correctText = q.correct.map(i => `${LETTERS[i]} (${escapeHTML(q.options[i])})`).join('; ');
       document.getElementById('rationale-framework').innerHTML = `
         <div><strong class="text-indigo-300">🎯 Correct ${q.correct.length > 1 ? 'Answers' : 'Answer'}:</strong> ${correctText}</div>
@@ -1496,7 +1551,8 @@
         const picked = selectedIndices.includes(idx) && !isPeek;
         return `
           <div class="p-3 rounded-xl ${isCorrectOpt ? 'bg-emerald-950/30 border border-emerald-500/40 text-emerald-100' : 'bg-slate-950/70 border border-slate-800 text-slate-400'}">
-            <span class="font-bold ${isCorrectOpt ? 'text-emerald-300' : 'text-rose-300/90'}">${LETTERS[idx]} ${isCorrectOpt ? '✓ Correct' : '✗ Incorrect'}${picked ? ' • your pick' : ''}:</span> ${escapeHTML(opt)}
+            <div><span class="font-bold ${isCorrectOpt ? 'text-emerald-300' : 'text-rose-300/90'}">${LETTERS[idx]} ${isCorrectOpt ? '✓ Correct' : '✗ Incorrect'}${picked ? ' • your pick' : ''}:</span> ${escapeHTML(opt)}</div>
+            ${q.optionRationales[idx] ? `<div class="mt-1.5 text-[12px] leading-relaxed ${isCorrectOpt ? 'text-emerald-100/90' : 'text-slate-300'}">${escapeHTML(q.optionRationales[idx])}</div>` : ''}
           </div>
         `;
       }).join('');
@@ -1579,6 +1635,8 @@
         q.topic.toLowerCase().includes(query) ||
         q.mnemonicTitle.toLowerCase().includes(query) ||
         q.mnemonicBody.toLowerCase().includes(query) ||
+        (q.fundamentals || '').toLowerCase().includes(query) ||
+        (q.clientNeed || '').toLowerCase().includes(query) ||
         q.category.toLowerCase().includes(query)
       );
 
@@ -1605,13 +1663,17 @@
       `).join('');
     }
 
-    function openQuestionFromVault(id) {
+    function goToQuestion(id) {
       switchTab('simulator');
+      activeNeed = 'ALL';
+      document.getElementById('need-filter').value = 'ALL';
       setCategory('ALL');
-      currentIndex = QUESTIONS.findIndex(q => q.id === id);
+      currentIndex = filteredQuestions.findIndex(q => q.id === id);
+      populateJumper();
       renderCurrentQuestion();
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
+    function openQuestionFromVault(id) { goToQuestion(id); }
 
 
     // Keyboard shortcuts in the simulator: A–E select, Enter submit, ←/→ navigate, F flag
