@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>NextGen Nurses | NCLEX-RN Interactive Prep — 200 QBank Pro</title>
+  <title>NextGen Nurses | NCLEX-RN Interactive Prep — 225 QBank Pro</title>
   <meta name="description" content="NCLEX-RN practice questions with visual mnemonics, pathophysiology rationales, and a lab values cheat sheet." />
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -328,8 +328,8 @@
                 <p class="text-xs text-emerald-400 font-semibold mt-1">$49.99 every 3 months • $0.55 a day</p>
               </div>
               <ul class="space-y-2 text-xs text-slate-200 pt-2 border-t border-slate-800">
-                <li>✔ 200 High-Yield NCLEX-Style Questions (incl. Select-All-That-Apply)</li>
-                <li>✔ Visual Mnemonic Vault (200 Flashcards)</li>
+                <li>✔ 225 High-Yield NCLEX-Style Questions, incl. Mental Health</li>
+                <li>✔ Visual Mnemonic Vault (225 Flashcards)</li>
                 <li>✔ Option-by-Option Rationales + Back-to-Basics Fundamentals</li>
                 <li>✔ Expanded Lab Values & 5 Deadly Labs Cheat Sheet</li>
                 <li>✔ Money-back pass guarantee</li>
@@ -352,8 +352,8 @@
                 <p class="text-xs text-slate-400 mt-1">$24.99 a month</p>
               </div>
               <ul class="space-y-2 text-xs text-slate-200 pt-2 border-t border-slate-800">
-                <li>✔ 200 High-Yield NCLEX-Style Questions (incl. Select-All-That-Apply)</li>
-                <li>✔ Visual Mnemonic Vault (200 Flashcards)</li>
+                <li>✔ 225 High-Yield NCLEX-Style Questions, incl. Mental Health</li>
+                <li>✔ Visual Mnemonic Vault (225 Flashcards)</li>
                 <li>✔ Option-by-Option Rationales + Back-to-Basics Fundamentals</li>
                 <li>✔ Expanded Lab Values & 5 Deadly Labs Cheat Sheet</li>
                 <li class="text-slate-500">✖ No money-back guarantee</li>
@@ -458,10 +458,10 @@
         <!-- Mode Switcher -->
         <nav class="flex flex-wrap items-center gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800">
           <button onclick="switchTab('simulator')" id="tab-simulator" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all bg-indigo-600 text-white shadow">
-            Exam Simulator (200)
+            Exam Simulator (225)
           </button>
           <button onclick="switchTab('vault')" id="tab-vault" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all text-slate-400 hover:text-white">
-            Mnemonic Vault (200)
+            Mnemonic Vault (225)
           </button>
           <button onclick="switchTab('labs')" id="tab-labs" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all text-slate-400 hover:text-white">
             Lab Values & Deadly Labs
@@ -493,7 +493,7 @@
       <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
         <div class="flex flex-wrap items-center gap-1.5">
           <button onclick="setCategory('ALL')" id="cat-ALL" class="cat-btn px-3 py-1 rounded-lg text-xs font-semibold bg-indigo-500/20 text-indigo-300 border border-indigo-500/40">
-            All Categories (200)
+            All Categories (225)
           </button>
           <button onclick="setCategory('Med-Surg')" id="cat-Med-Surg" class="cat-btn px-3 py-1 rounded-lg text-xs font-semibold bg-slate-800/70 text-slate-400 hover:text-white border border-slate-700/60">
             Med-Surg (50)
@@ -506,6 +506,9 @@
           </button>
           <button onclick="setCategory('Prioritization & Fundamentals')" id="cat-Prio" class="cat-btn px-3 py-1 rounded-lg text-xs font-semibold bg-slate-800/70 text-slate-400 hover:text-white border border-slate-700/60">
             Prioritization & Fundamentals (50)
+          </button>
+          <button onclick="setCategory('Mental Health')" id="cat-MH" class="cat-btn px-3 py-1 rounded-lg text-xs font-semibold bg-slate-800/70 text-slate-400 hover:text-white border border-slate-700/60">
+            Mental Health (25)
           </button>
           <button onclick="setCategory('FLAGGED')" id="cat-FLAGGED" class="cat-btn px-3 py-1 rounded-lg text-xs font-semibold bg-slate-800/70 text-slate-400 hover:text-white border border-slate-700/60">
             ★ Flagged (<span id="flag-count">0</span>)
@@ -807,7 +810,7 @@
                 <p class="text-xs text-emerald-400 font-semibold mt-1">$49.99 billed every 3 months</p>
               </div>
               <ul class="space-y-2 text-xs text-slate-300 border-t border-slate-800 pt-3">
-                <li>✔ 200 High-Yield NCLEX Questions & Mnemonic Vault</li>
+                <li>✔ 225 High-Yield NCLEX Questions & Mnemonic Vault</li>
                 <li>✔ Expanded Lab Values & Deadly Labs Guide</li>
                 <li>✔ 100% Pass Money-Back Guarantee</li>
               </ul>
@@ -827,7 +830,7 @@
                 <p class="text-xs text-slate-400 font-semibold mt-1">Billed monthly • Cancel anytime</p>
               </div>
               <ul class="space-y-2 text-xs text-slate-300 border-t border-slate-800 pt-3">
-                <li>✔ 200 High-Yield NCLEX Questions & Mnemonic Vault</li>
+                <li>✔ 225 High-Yield NCLEX Questions & Mnemonic Vault</li>
                 <li>✔ Expanded Lab Values & Deadly Labs Guide</li>
                 <li class="text-slate-500">✖ No money-back guarantee</li>
               </ul>
@@ -981,7 +984,7 @@
 
       const pw = document.getElementById('auth-password');
       const copy = {
-        login:   ['Student Portal Login', 'Log in to unlock all 200 NCLEX-RN questions.', 'Log In & Unlock Simulator →'],
+        login:   ['Student Portal Login', 'Log in to unlock all 225 NCLEX-RN questions.', 'Log In & Unlock Simulator →'],
         signup:  ['Create Your Student Account', 'Set up your login to start practicing.', 'Create Account →'],
         reset:   ['Reset Your Password', "Enter your email and we'll send you a reset link.", 'Send Reset Link →'],
         newpass: ['Choose a New Password', 'Enter a new password for your account.', 'Save New Password →']
@@ -1211,6 +1214,9 @@
       set('cat-Pharmacology', `Pharmacology (${n('Pharmacology')})`);
       set('cat-OB', `Maternal & Peds (${n('OB & Peds')})`);
       set('cat-Prio', `Prioritization & Fundamentals (${n('Prioritization & Fundamentals')})`);
+      set('cat-MH', `Mental Health (${n('Mental Health')})`);
+      const mh = document.getElementById('cat-MH');
+      if (mh) mh.classList.toggle('hidden', n('Mental Health') === 0);
       set('tab-simulator', `Exam Simulator (${QUESTIONS.length})`);
       set('tab-vault', `Mnemonic Vault (${QUESTIONS.length})`);
     }
@@ -1282,7 +1288,7 @@
 
     const CAT_BUTTON_IDS = {
       'ALL': 'cat-ALL', 'Med-Surg': 'cat-Med-Surg', 'Pharmacology': 'cat-Pharmacology',
-      'OB & Peds': 'cat-OB', 'Prioritization & Fundamentals': 'cat-Prio',
+      'OB & Peds': 'cat-OB', 'Prioritization & Fundamentals': 'cat-Prio', 'Mental Health': 'cat-MH',
       'FLAGGED': 'cat-FLAGGED', 'MISSED': 'cat-MISSED'
     };
 
