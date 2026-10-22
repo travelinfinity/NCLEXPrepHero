@@ -469,9 +469,6 @@
           <button onclick="switchTab('pricing')" id="tab-pricing" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all text-slate-400 hover:text-white">
             Subscription Plans
           </button>
-          <button onclick="switchTab('builder')" id="tab-builder" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all text-slate-400 hover:text-white">
-            Export JSON
-          </button>
         </nav>
 
         <!-- Live Score, Timer & Sign Out -->
@@ -654,8 +651,8 @@
       <section id="view-vault" class="hidden space-y-5">
         <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 flex flex-wrap items-center justify-between gap-4">
           <div>
-            <h2 class="font-display font-bold text-xl text-white">100 High-Yield NCLEX Mnemonics & Clinical Pearls Vault</h2>
-            <p class="text-xs text-slate-400">Rapid review flashcards generated directly from all 100 questions across all 4 categories.</p>
+            <h2 class="font-display font-bold text-xl text-white">High-Yield NCLEX Mnemonics & Clinical Pearls Vault</h2>
+            <p class="text-xs text-slate-400">Rapid review flashcards generated from every question across all 4 categories.</p>
           </div>
           <input type="text" id="vault-search" oninput="renderVault()" placeholder="Search mnemonic, drug, disease (e.g., Digoxin, VEAL CHOP, Sepsis)..." class="w-full md:w-80 bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-indigo-500" />
         </div>
@@ -820,14 +817,6 @@
         </div>
       </section>
 
-      <!-- VIEW 5: CUSTOM QUESTION BUILDER & JSON EXPORT -->
-      <section id="view-builder" class="hidden bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4">
-        <h2 class="font-display font-bold text-lg text-white">Export Question Bank JSON</h2>
-        <p class="text-xs text-slate-400">Download all 100 questions, rationales, and mnemonics in structured JSON format.</p>
-        <div class="flex gap-3">
-          <button onclick="exportJSON()" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold">Download 100-Question JSON</button>
-        </div>
-      </section>
 
     </main>
   </div>
@@ -836,9 +825,8 @@
     // ============================================================================
     // 1. INTRO FUNNEL & LOGIN AUTHENTICATION CONTROLLERS
     // ============================================================================
-    // NOTE: Accounts use Supabase Auth (see SUPABASE AUTH below). The question
-    // bank still ships inside this file, so move it into a Supabase table with
-    // row-level security to stop it being read from the page source.
+    // NOTE: Accounts use Supabase Auth, and the question bank is stored in the
+    // Supabase "questions" table, readable only by logged-in students.
     const screens = [
       'screen-hero', 'screen-step1', 'screen-step2', 'screen-step3',
       'screen-step4', 'screen-step5', 'screen-step6', 'screen-step7',
@@ -1081,7 +1069,7 @@
     }
 
     let dashboardReady = false;
-    function unlockSimulatorDashboard(username) {
+    async function unlockSimulatorDashboard(username) {
       forceCloseLoginModal();
       document.getElementById('funnel-wrapper').classList.add('hidden');
       document.getElementById('app-dashboard').classList.remove('hidden');
@@ -1089,18 +1077,31 @@
         document.getElementById('logged-in-welcome').textContent = `Logged in as: ${username} • 100 QBank Pro Active`;
       }
       window.scrollTo(0, 0);
-      updateScoreBadge();
+      startTimer();
+      if (dashboardReady) { renderCurrentQuestion(); return; }
+
+      showQuestionStatus('<span class="text-slate-400">Loading your question bank…</span>');
+      try {
+        await loadQuestions();
+      } catch (err) {
+        console.error(err);
+        showQuestionStatus(`<span class="text-rose-300">Couldn't load the questions (${escapeHTML(err.message || 'network error')}). Check your connection and </span><button onclick="unlockSimulatorDashboard()" class="underline text-indigo-300">try again</button>.`);
+        return;
+      }
+      if (QUESTIONS.length === 0) {
+        showQuestionStatus('<span class="text-amber-300">No questions are available yet. Please check back soon.</span>');
+        return;
+      }
       if (!dashboardReady) {
         dashboardReady = true;
+        updateScoreBadge();
         setCategory('ALL');
-      } else {
-        renderCurrentQuestion();
       }
-      startTimer();
     }
 
     function showFunnel() {
       stopTimer();
+      QUESTIONS = []; filteredQuestions = []; questionsPromise = null; dashboardReady = false;
       document.getElementById('app-dashboard').classList.add('hidden');
       document.getElementById('funnel-wrapper').classList.remove('hidden');
       document.getElementById('top-progress-wrap').classList.add('hidden');
@@ -1140,928 +1141,57 @@
     });
 
     // ============================================================================
-    // 2. COMPLETE 100 HIGH-YIELD NCLEX QUESTIONS (25 PER CATEGORY)
+    // 2. QUESTION BANK — loaded from the Supabase "questions" table after login.
+    //    Edit questions in Supabase → Table Editor → questions (no code changes needed).
     // ============================================================================
-    const RAW_QUESTIONS = [
-      // ==================== CATEGORY 1: MED-SURG (25 QUESTIONS) ====================
-      ["Med-Surg", "Acute Myocardial Infarction (STEMI)", "single",
-        "A 62-year-old client arrives at the ED reporting crushing substernal chest pain radiating to the left jaw. 12-lead ECG reveals ST-segment elevation in leads II, III, and aVF. Vital signs: BP 138/86 mmHg, HR 96 bpm, RR 20/min, SpO2 96% on room air. Which prescribed intervention should the nurse implement FIRST?",
-        ["Administer sublingual nitroglycerin 0.4 mg immediately", "Apply supplemental oxygen at 4 L/min via nasal cannula", "Administer morphine sulfate 2 mg IV push", "Instruct the client to chew 325 mg of non-enteric-coated aspirin"],
-        [3],
-        "STEMI First Hour = Aspirin Early, Oxygen Only If Needed, Nitro With Caution",
-        "• A = Aspirin 162–325 mg CHEWED (non-enteric) ASAP — proven to cut MI mortality\n• O = Oxygen ONLY if SpO2 < 90% or respiratory distress\n• N = Nitroglycerin SL if SBP >= 90, no PDE-5 inhibitor, and NO right-ventricular infarct\n• M = Morphine only for pain unrelieved by nitrates\n• Inferior STEMI (II, III, aVF) → right-sided ECG (V4R) before nitro: an RV infarct is preload-dependent!",
-        "Chewed aspirin is the first priority: it blocks thromboxane A2 and stops further platelet aggregation in the occluded coronary artery, and it lowers MI mortality. Oxygen is unnecessary with an SpO2 of 96%. ST elevation in II, III, and aVF indicates an inferior MI, which often involves the right ventricle; a preload-dependent right ventricle can crash into severe hypotension after nitroglycerin, so RV involvement should be ruled out before nitrates.",
-        "NCLEX Trap: 'MONA' is a memory list, not a priority order. Aspirin goes in first, and oxygen is not given just because it is on the list if SpO2 is >= 90%. Before any nitrate, ask about sildenafil/vardenafil (24 h) or tadalafil (48 h)."],
-
-      ["Med-Surg", "Left vs. Right Heart Failure", "sata",
-        "The nurse is assessing a client admitted with acute decompensated left-sided heart failure. Which clinical manifestations should the nurse expect to find? (Select all that apply.)",
-        ["Bibasilar crackles auscultated in the lungs", "Pink, frothy sputum and paroxysmal nocturnal dyspnea", "Jugular venous distention (JVD) and hepatomegaly", "S3 ventricular gallop on cardiac auscultation", "3+ bilateral pitting dependent ankle edema"],
-        [0, 1, 3],
-        "LEFT = Lungs (Drowning) | RIGHT = Rest of Body (Swelling)",
-        "• L = Lungs (Crackles, pink frothy sputum, orthopnea, dyspnea)\n• E = Elevated pulmonary capillary wedge pressure\n• F = Frothy sputum & Fatigue\n• T = Tachycardia & S3 gallop\n• RIGHT = JVD, Ascites, Hepatomegaly, Peripheral Edema",
-        "Left-sided heart failure causes blood to back up into the left atrium and pulmonary circulation, increasing hydrostatic pressure in the lung capillaries. This produces pulmonary congestion (bibasilar crackles, pink frothy sputum, paroxysmal nocturnal dyspnea, and an S3 ventricular gallop). JVD, hepatomegaly, and peripheral ankle edema are classic signs of right-sided heart failure.",
-        "NCLEX Trap: Frothy pink-tinged sputum indicates life-threatening flash pulmonary edema—sit the client upright in High Fowler's with legs dependent immediately and apply high-flow O2!"],
-
-      ["Med-Surg", "Cardiac Tamponade (Beck's Triad)", "single",
-        "A client is 4 hours post-pericardiocentesis and suddenly becomes restless and dyspneic. Assessment reveals muffled heart sounds, jugular venous distention, and a blood pressure drop from 126/78 mmHg to 84/68 mmHg. Which complication does the nurse suspect?",
-        ["Acute pulmonary embolism", "Cardiac tamponade", "Tension pneumothorax", "Cardiogenic shock from left ventricular failure"],
-        [1],
-        "BECK'S TRIAD = 3 D's of Cardiac Tamponade",
-        "• D = Distant (muffled) heart sounds\n• D = Distended jugular veins (JVD with clear lungs)\n• D = Decreased arterial BP (Narrowed pulse pressure + Pulsus paradoxus > 10 mmHg drop on inspiration)",
-        "Fluid or blood rapidly accumulating in the non-stretchable pericardial sac compresses the heart chambers externally, preventing diastolic ventricular filling and causing obstructive shock. This produces Beck's Triad: hypotension with narrowed pulse pressure (84/68 = 16 mmHg), JVD with clear lungs, and muffled heart sounds.",
-        "Bedside Teaching: Prepare immediately for emergency repeat pericardiocentesis and administer IV fluid boluses to maintain venous return (preload)."],
-
-      ["Med-Surg", "COPD Oxygen & Carbon Dioxide Narcosis", "single",
-        "A client with severe chronic obstructive pulmonary disease (COPD) and chronic hypercapnia is receiving oxygen at 2 L/min via nasal cannula. The client's SpO2 is 91%. Which action by the nurse is most appropriate?",
-        ["Increase the oxygen flow rate to 6 L/min to achieve an SpO2 of 98%", "Maintain the oxygen at 2 L/min and continue monitoring respiratory status", "Switch the client to a non-rebreather mask at 15 L/min", "Discontinue oxygen therapy since the client's SpO2 is above 90%"],
-        [1],
-        "COPD Target SpO2 = 88% to 92% (Low & Slow O2)",
-        "• Target SpO2 in COPD = 88%–92%\n• Best precise delivery device = Venturi Mask\n• High O2 wipes out hypoxic drive & worsens V/Q mismatch (Haldane effect) → CO2 narcosis",
-        "In clients with chronic COPD and CO2 retention, an SpO2 of 88%–92% is the exact therapeutic target. Maintaining 2 L/min keeps the client safely oxygenated without inducing hypercapnic respiratory acidosis (PaCO2 in the 60s).",
-        "NCLEX Trap: Do NOT withhold oxygen if a COPD patient is acutely hypoxic (SpO2 < 85%)—stabilize airway/oxygenation first, then titrate down to 88–92%."],
-
-      ["Med-Surg", "Chest Tube Water-Seal Drainage System", "single",
-        "The nurse is caring for a client with a chest tube connected to a three-chamber wet suction drainage system for a pneumothorax. Which finding requires IMMEDIATE nursing intervention?",
-        ["Gentle, continuous bubbling in the suction control chamber", "Fluctuation (tidaling) of fluid in the water-seal chamber during inspiration and expiration", "Continuous, vigorous bubbling in the water-seal chamber", "45 mL of serosanguineous drainage in the collection chamber over 2 hours"],
-        [2],
-        "TIDALING is Terrific | Continuous BUBBLING in Water-Seal = Air Leak!",
-        "• Apical tube (high) removes AIR; Basilar tube (low) removes BLOOD/FLUID\n• Suction Control Chamber = Gentle continuous bubbling is NORMAL\n• Water-Seal Chamber = Tidaling (up & down with breathing) is NORMAL\n• Water-Seal Chamber = CONTINUOUS bubbling = AIR LEAK in system!",
-        "Continuous bubbling in the water-seal chamber indicates an active air leak in the closed chest tube system between the patient and the drainage unit. The nurse must inspect the tubing connections and insertion dressing to locate and seal the leak.",
-        "NCLEX Trap: If the drainage unit cracks, immediately submerge the distal end of the tube 2.5 cm (1 inch) in sterile water and set up a new unit. Do NOT clamp (clamping can cause a tension pneumothorax). If pulled out of chest: Cover with gloved hand -> Seal with sterile Vaseline gauze taped on 3 SIDES!"],
-
-      ["Med-Surg", "Pulmonary Embolism (PE) Priority", "single",
-        "A client 2 days post-total hip arthroplasty suddenly develops pleuritic chest pain, tachypnea (RR 32/min), tachycardia (HR 124 bpm), petechiae over the chest, and SpO2 of 84%. What is the nurse's FIRST action?",
-        ["Prepare to administer IV unfractionated heparin bolus", "Elevate the head of the bed to High Fowler's and apply high-flow oxygen", "Obtain a STAT CT pulmonary angiogram", "Auscultate bilateral lower extremities for deep vein thrombosis"],
-        [1],
-        "FAT / CLOT PE = Sit Up & Oxygenate First!",
-        "• S = Sudden dyspnea & tachypnea (First sign of PE)\n• P = Pleuritic chest pain & Petechiae over chest/axilla (Fat emboli after long bone fracture)\n• O = Oxygenate & High Fowler's FIRST before calling provider or CT scan",
-        "Airway and breathing take priority. When acute pulmonary embolism or fat embolism syndrome is suspected (SpO2 84%), the immediate nursing action is to elevate the head of the bed to High Fowler's to maximize lung expansion and administer high-flow oxygen.",
-        "NCLEX Trap: Never leave an unstable hypoxic patient to go get tests or call the doctor—stabilize positioning and oxygen at the bedside first."],
-
-      ["Med-Surg", "Tension Pneumothorax", "single",
-        "A client on mechanical ventilation with high PEEP suddenly develops severe hypotension, absent breath sounds on the right side, subcutaneous emphysema, and tracheal deviation to the left. What emergency procedure should the nurse prepare for immediately?",
-        ["Endotracheal re-intubation", "Needle decompression at the 2nd intercostal space, midclavicular line", "Bronchoscopy at the bedside", "Administration of IV furosemide"],
-        [1],
-        "TENSION = Tracheal Shift AWAY from Injured Side",
-        "• T = Tracheal deviation to the UNAFFECTED (opposite) side\n• E = Expanded hemithorax with absent breath sounds on affected side\n• N = Needle thoracostomy (decompression) STAT followed by chest tube",
-        "High PEEP can rupture alveoli (barotrauma), trapping air in the pleural space under positive pressure. Tracheal deviation away from the affected side with unilateral absent breath sounds and obstructive shock (vena cava compression) requires immediate needle decompression.",
-        "Bedside Pearl: Tracheal deviation is a late, life-threatening sign indicating mediastinal shift and imminent cardiac arrest."],
-
-      ["Med-Surg", "Diabetic Ketoacidosis (DKA) Management", "single",
-        "A client with Type 1 diabetes is admitted with Diabetic Ketoacidosis (DKA). Lab results show blood glucose 580 mg/dL, arterial pH 7.18, and serum potassium 3.2 mEq/L. Which prescribed order should the nurse question or hold UNTIL corrected?",
-        ["Infuse 0.9% Normal Saline at 1,000 mL/hr IV", "Initiate Regular Insulin continuous IV infusion at 0.1 units/kg/hr", "Administer Potassium Chloride 40 mEq IV piggyback", "Place the client on continuous cardiac telemetry monitoring"],
-        [1],
-        "DKA = Dehydration, Ketones/Kussmaul, Acidosis, K+ First Before Insulin!",
-        "• 1st: Hydrate with 0.9% Normal Saline\n• 2nd: Check K+ BEFORE starting Regular IV Insulin!\n• Why? Insulin pushes K+ into cells. Starting insulin when K+ < 3.3 causes fatal arrhythmias!\n• Add Dextrose (D5W) to IV fluids once glucose drops to 250 mg/dL",
-        "Regular insulin is the ONLY insulin that can be given IV, and it drives potassium from the blood into the intracellular space. Because the client's serum potassium is already low (3.2 mEq/L), starting an IV insulin drip before replacing potassium will precipitate lethal hypokalemic cardiac dysrhythmias.",
-        "NCLEX Trap: Never start an IV Regular Insulin drip in DKA/HHS if serum K+ is < 3.3 mEq/L! Replete fluids and potassium first (verify urine output >= 30 mL/hr)."],
-
-      ["Med-Surg", "Addisonian Crisis vs. Cushing's Syndrome", "single",
-        "A client with primary adrenal insufficiency (Addison's disease) presents to the ED with severe hypotension (BP 76/44 mmHg), vomiting, confusion, hyponatremia (Na+ 124 mEq/L), and hyperkalemia (K+ 6.4 mEq/L). Which intervention is the priority?",
-        ["Administer IV hydrocortisone sodium succinate and 0.9% Normal Saline with Dextrose", "Administer oral spironolactone and restrict sodium intake", "Infuse hypotonic 0.45% sodium chloride at 75 mL/hr", "Administer subcutaneous regular insulin only"],
-        [0],
-        "ADDISON'S = 'ADD-A-SONE' + Treat Crisis with 3 S's",
-        "• Addison's has LOW Steroids, LOW Sugar, LOW Sodium, LOW BP, Bronze hyperpigmented skin, HIGH K+\n• Treat Addisonian Crisis with the 3 S's:\n  1. Steroids (IV Hydrocortisone)\n  2. Saline (0.9% NS for shock/hyponatremia)\n  3. Sugar (Dextrose for hypoglycemia)",
-        "Addisonian crisis is a life-threatening deficiency of adrenal cortex hormones (cortisol and aldosterone) triggered by stress or abrupt steroid withdrawal. It causes profound hypovolemic shock, hypoglycemia, hyponatremia, and hyperkalemia. Rapid IV hydrocortisone ('Add-a-sone') and isotonic saline with dextrose restore vascular volume and electrolytes.",
-        "NCLEX Trap: Hydrocortisone + D5NS fixes all 3 life threats at once (vascular collapse, low glucose, and shifts K+ back into cells)."],
-
-      ["Med-Surg", "SIADH vs. Diabetes Insipidus (DI)", "single",
-        "A client with small-cell lung cancer develops Syndrome of Inappropriate Antidiuretic Hormone (SIADH). Serum sodium is 116 mEq/L, urine specific gravity is 1.035, and the client reports a dull headache and confusion. Which intervention should the nurse anticipate?",
-        ["Encourage oral fluid intake of 3,000 mL/day", "Initiate seizure precautions, restrict fluids, and prepare to infuse 3% hypertonic saline slowly", "Administer desmopressin (DDAVP) intranasally", "Infuse 0.45% half-normal saline at 200 mL/hr"],
-        [1],
-        "SIADH = Soaked Inside (Low Na+) | DI = Dry Inside (High Na+)",
-        "• SIADH = Excess ADH → Oliguria, Concentrated urine (SG > 1.030), Dilutional Hyponatremia (Na+ < 135) → Risk of Cerebral Edema & Seizures!\n• DI = Low ADH → Polyuria, Severe dehydration, Hypernatremia\n• SIADH Treatment: Fluid restriction, Tolvaptan/Demeclocycline, Slow 3% Hypertonic Saline",
-        "Severe dilutional hyponatremia (Na+ < 120 mEq/L) in SIADH causes water to shift osmotically into brain cells, leading to cerebral edema, headache, confusion, and seizures. Fluid restriction, seizure precautions, and cautious 3% hypertonic saline are required.",
-        "NCLEX Trap: Infuse 3% hypertonic saline via infusion pump VERY slowly—correcting Na+ too fast (> 8–12 mEq/L in 24h) causes Osmotic Demyelination Syndrome (Central Pontine Myelinolysis)!"],
-
-      ["Med-Surg", "Thyroid Storm (Thyrotoxic Crisis)", "single",
-        "A client with uncontrolled Graves' disease develops thyroid storm after subtotal thyroidectomy. Vital signs: T 105.2°F (40.6°C), HR 182 bpm, BP 188/96 mmHg, and psychotic delirium. Which medication should the nurse question if ordered for fever reduction?",
-        ["Acetaminophen (Tylenol)", "Aspirin (Acetylsalicylic acid)", "Propylthiouracil (PTU)", "Propranolol (Inderal)"],
-        [1],
-        "THYROID STORM = NO Aspirin (Salicylates Free Up T3/T4!)",
-        "• P = PTU ('Puts Thyroid Under' — monitor WBC for agranulocytosis!)\n• I = Iodine / Lugol's solution (Give 1 hour AFTER PTU to block release)\n• B = Beta-blocker (Propranolol for tachycardia/tremors)\n• S = Steroids & Cooling blanket/ice packs + 10L O2 mask STAT + Acetaminophen (NEVER Aspirin!)",
-        "Subtotal thyroidectomy carries a high risk of Thyroid Storm in the first 12–48 hours. Aspirin displaces thyroid hormone (T3/T4) from thyroid-binding proteins in the bloodstream, increasing free circulating thyroid hormone and worsening the hypermetabolic crisis.",
-        "NCLEX Trap: Always give PTU at least 1 hour BEFORE Lugol's iodine solution so the thyroid doesn't use the iodine to synthesize more hormone!"],
-
-      ["Med-Surg", "Hypocalcemia After Total Thyroidectomy", "single",
-        "A client is 18 hours post-total thyroidectomy and reports numbness and tingling around the mouth and fingertips. When the nurse inflates a blood pressure cuff on the upper arm, the client's wrist and fingers flex involuntarily into a spasm. How should the nurse document and respond to this finding?",
-        ["Positive Chvostek's sign; administer oral vitamin D", "Positive Trousseau's sign; prepare to administer IV Calcium Gluconate", "Negative Babinski reflex; reposition the client's arm", "Normal post-anesthesia shivering; apply warm blankets"],
-        [1],
-        "CATS of Hypocalcemia (Calcium Acts as a Sedative!)",
-        "• C = Convulsions & Circumoral tingling (First sign!)\n• A = Arrhythmias (Prolonged QT interval)\n• T = Tetany (Chvostek = Cheek tap twitch; Trousseau = BP cuff carpal spasm)\n• S = Stridor & Spasms (Laryngospasm = Airway emergency! Keep IV Calcium Gluconate + Trach kit at bedside)",
-        "Calcium and Magnesium act as sedatives in the body (they do the OPPOSITE of their prefix). Inadvertent trauma to the parathyroid glands during total thyroidectomy causes acute hypocalcemia (12–48 hours post-op), making nerves hyperexcitable. Carpal spasm induced by BP cuff inflation is a positive Trousseau's sign requiring IV calcium gluconate.",
-        "Bedside Pearl: First 12 hours post-thyroidectomy = watch for airway edema & hemorrhage (check behind neck). Hours 12–48 = watch for Tetany (Total) or Thyroid Storm (Subtotal)."],
-
-      ["Med-Surg", "Chronic Kidney Disease (CKD) & Hyperkalemia ECG", "single",
-        "A client with end-stage renal disease who missed two hemodialysis sessions is admitted with muscle weakness. Cardiac telemetry shows tall, peaked T waves and widened QRS complexes. Serum potassium is 7.1 mEq/L. Which medication should the nurse administer FIRST to protect the myocardium?",
-        ["Sodium polystyrene sulfonate (Kayexalate) orally", "10% Calcium Gluconate IV push slowly", "Furosemide 40 mg IV push", "Spironolactone 25 mg PO"],
-        [1],
-        "C-BIG-K-DROP for Deadly Hyperkalemia (> 6.0 mEq/L)",
-        "• C = Calcium Gluconate IV FIRST (Stabilizes cardiac cell membrane in 1–3 min!)\n• B = Bicarbonate IV & Beta-2 agonist (Albuterol nebulizer shifts K+ in)\n• I = Insulin (Regular IV) +\n• G = Glucose (Dextrose 50% pushes K+ into cells in minutes)\n• K-DROP = Kayexalate ('K-Exits-Late' through stool over hours) / Dialysis",
-        "Potassium > 6.0 mEq/L is one of the 5 Deadly 'D' Labs—never leave the bedside! When hyperkalemia causes ECG changes (tall peaked T waves, widened QRS), IV Calcium Gluconate is given first to immediately stabilize the cardiac membrane threshold against ventricular fibrillation, while Regular Insulin + IV Dextrose (D50) is prepared to shift K+ into cells.",
-        "NCLEX Trap: Calcium gluconate does NOT lower serum potassium levels—it shields the heart muscle while Insulin + Dextrose shifts K+ intracellularly and Kayexalate removes it via stool!"],
-
-      ["Med-Surg", "Arteriovenous (AV) Fistula Care", "sata",
-        "The nurse is caring for a client with a left forearm arteriovenous (AV) fistula for hemodialysis. Which actions should the nurse include in the plan of care? (Select all that apply.)",
-        ["Palpate for a thrill and auscultate for a bruit every shift", "Obtain blood pressures and venipunctures only on the right arm", "Instruct the client to carry heavy grocery bags with the left arm to strengthen the fistula", "Ensure the client does not sleep on the left arm or wear tight jewelry on the left wrist", "Flush the AV fistula with 10 mL of heparinized saline every 8 hours"],
-        [0, 1, 3],
-        "FEEL the Thrill, HEAR the Bruit — NO BP/Blood Draws/Compression!",
-        "• Thrill = Palpable vibration (Feel it)\n• Bruit = Audible swooshing sound (Hear it)\n• Limb Alert: NEVER do BP, IVs, blood draws, tight clothing, or heavy lifting on the fistula arm!",
-        "Patency of an internal surgical AV fistula is verified every shift by feeling a vibratory thrill and hearing a swooshing bruit. Compression, constrictive clothing, sleeping on the arm, blood pressures, and venipunctures on the fistula arm can cause fatal thrombosis or hemorrhage. Internal fistulas do not have external ports to flush.",
-        "NCLEX Trap: If there is NO thrill or bruit, notify the provider immediately (clotted fistula). Also hold water-soluble vitamins/antihypertensives before dialysis so they aren't dialyzed out or cause hypotension!"],
-
-      ["Med-Surg", "Acute Pancreatitis Management", "single",
-        "A client is admitted with acute pancreatitis presenting with severe epigastric pain radiating to the back, vomiting, and a serum lipase of 940 U/L. Which nursing intervention is most appropriate?",
-        ["Place the client in a supine, flat position to reduce abdominal wall tension", "Maintain NPO status, administer IV fluids, and position the client leaning forward or fetal position", "Administer morphine sulfate rapid IV push for pain relief", "Provide a high-fat, high-protein diet to promote pancreatic healing"],
-        [1],
-        "PANCREATITIS = Rest the Pancreas (NPO + Hydration + Fetal Position)",
-        "• P = Pain in LUQ/epigastrium radiating to back (Worse lying flat, better leaning forward/fetal)\n• A = Amylase & Lipase elevated (Lipase is most specific!)\n• N = NPO (Nothing by mouth so pancreas stops secreting digestive enzymes)\n• C = Cullen's sign (blue umbilicus) & Grey Turner's sign (flank bruising = hemorrhagic retroperitoneal bleeding!)",
-        "Oral intake stimulates secretin and cholecystokinin, causing the inflamed pancreas to secrete proteolytic enzymes and autodigest itself. NPO status, aggressive IV fluid resuscitation, and flexing the trunk (fetal or sitting leaning forward) decrease pancreatic capsule tension and pain.",
-        "Bedside Pearl: Inspect the umbilicus (Cullen's sign) and flanks (Grey Turner's sign) and monitor for hypocalcemia (fat necrosis binds calcium!)."],
-
-      ["Med-Surg", "Hepatic Encephalopathy: Lactulose & 'Neo Kan'", "single",
-        "A client with decompensated cirrhosis and hepatic encephalopathy exhibits asterixis (flapping hand tremor) and confusion. The nurse administers prescribed lactulose (Cephulac) and oral neomycin. Which outcome indicates that the medications are effective?",
-        ["The client experiences no bowel movements for 48 hours", "The client passes 2 to 3 soft stools daily and displays improved mental alertness", "The client's serum ammonia level increases from 80 to 130 mcg/dL", "The client's urine output increases to 150 mL/hr"],
-        [1],
-        "LACTULOSE (2–3 Soft Stools/Day) + 'Neo Kan' Sterilize the Can!",
-        "• Cirrhosis cannot convert Ammonia (NH3) into Urea → Ammonia crosses blood-brain barrier → Hepatic Encephalopathy + Asterixis\n• Lactulose acidifies the colon, trapping NH4+ to be excreted in 2–3 soft stools/day\n• Oral Neomycin / Kanamycin ('Neo Kan') or Rifaximin sterilize gut E. coli to stop ammonia production!",
-        "Lactulose lowers serum ammonia by trapping ammonium ions in the gut and expelling them via 2–3 soft bowel movements per day, while oral aminoglycosides (neomycin/kanamycin) aren't absorbed systemically and kill ammonia-producing gut bacteria. Improved mental status and resolution of asterixis are the primary therapeutic indicators.",
-        "NCLEX Trap: Do NOT hold lactulose just because the client has loose stools unless it is severe watery diarrhea causing dehydration/hypokalemia—2 to 3 soft stools/day is the exact goal!"],
-
-      ["Med-Surg", "Upper GI Bleed: Esophageal Varices (Sengstaken-Blakemore Tube)", "single",
-        "A client with bleeding esophageal varices has a Sengstaken-Blakemore balloon tamponade tube inserted. The client suddenly develops severe respiratory distress and stridor. What should the nurse do IMMEDIATELY?",
-        ["Call the healthcare provider to request a stat chest X-ray", "Use the bedside scissors to cut the tube lumen and deflate the balloons immediately", "Increase the traction weight on the balloon tube by 2 pounds", "Irrigate the gastric port with 50 mL of iced saline"],
-        [1],
-        "BALLOON TAMPONADE = Keep SCISSORS at the Bedside!",
-        "• If gastric anchor balloon ruptures or slips upward, the inflated esophageal balloon gets pulled into the hypopharynx → TOTAL AIRWAY OBSTRUCTION!\n• Emergency Action: Cut the tube ports with bedside scissors and remove immediately!",
-        "Upward migration of the esophageal balloon obstructs the larynx/trachea, causing acute asphyxiation. Heavy scissors must always be taped to the head of the bed to immediately cut the lumens and deflate the balloons if stridor or respiratory distress occurs.",
-        "NCLEX Trap: Never wait for a physician order when a balloon tamponade tube causes stridor—cut and remove immediately!"],
-
-      ["Med-Surg", "Ischemic vs. Hemorrhagic Stroke (tPA Eligibility)", "single",
-        "A client arrives at the ED with right-sided hemiplegia and expressive aphasia that began 90 minutes ago. A non-contrast head CT scan is negative for hemorrhage. Blood pressure is 210/118 mmHg. Before administering IV alteplase (tPA), which intervention is essential?",
-        ["Administer aspirin 325 mg PO and clopidogrel 75 mg PO", "Lower the blood pressure below 185/110 mmHg using prescribed IV labetalol", "Perform a lumbar puncture to rule out meningitis", "Insert a Foley catheter and nasogastric tube after starting the tPA drip"],
-        [1],
-        "tPA Stroke Rules = < 3 to 4.5 Hours, Negative CT, BP < 185/110",
-        "• Time window: Within 3 to 4.5 hours of 'last known well'\n• Head CT FIRST to rule out hemorrhagic stroke\n• BP MUST be < 185/110 mmHg before starting tPA (High BP + tPA = Brain Bleed!)\n• Place ALL tubes (Foley, NG, IVs) BEFORE starting tPA!",
-        "Severe hypertension (> 185/110 mmHg) dramatically increases the risk of fatal intracranial hemorrhage during fibrinolytic (tPA) therapy. BP must be safely lowered below 185/110 mmHg prior to initiating the tPA infusion.",
-        "NCLEX Trap: No anticoagulants or antiplatelets (aspirin/heparin) for 24 hours after tPA administration, and place all invasive lines BEFORE starting tPA!"],
-
-      ["Med-Surg", "Autonomic Dysreflexia (Spinal Cord Injury T6 or Higher)", "single",
-        "A client with a T4 spinal cord injury suddenly reports a severe, pounding headache. Assessment reveals BP 208/112 mmHg, HR 48 bpm, profuse flushing and sweating above the level of injury, and goosebumps below the injury. What is the nurse's FIRST action?",
-        ["Administer sublingual nifedipine or hydralazine IV", "Elevate the head of the bed to 90 degrees (High Fowler's) and loosen constrictive clothing", "Catheterize the bladder immediately while the client lies flat", "Perform digital rectal stimulation to check for fecal impaction"],
-        [1],
-        "SIT UP FIRST in Autonomic Dysreflexia (T6 or Above)!",
-        "• 1st Action: Sit patient straight up (90° High Fowler's) & dangle legs to cause orthostatic BP drop!\n• 2nd Action: Check for #1 trigger = Distended Bladder (kinked Foley tubing or full bladder)\n• 3rd Action: Check for #2 trigger = Fecal impaction (use anesthetic ointment first!)\n• 4th Action: Give antihypertensive if BP stays dangerously high",
-        "Autonomic dysreflexia is an uninhibited sympathetic nervous system surge triggered by a noxious stimulus below a T6 or higher spinal cord lesion (most commonly a distended bladder). Sitting the client upright immediately utilizes orthostatic gravity to pool blood in the lower extremities and lower cerebral blood pressure, preventing a fatal hemorrhagic stroke while the nurse checks for a kinked Foley catheter.",
-        "NCLEX Trap: Always raise the head of the bed BEFORE checking the bladder or giving antihypertensives!"],
-
-      ["Med-Surg", "Increased Intracranial Pressure (ICP) & Cushing's Triad", "single",
-        "The nurse is monitoring a client with a traumatic brain injury. Vital signs change from BP 122/78 mmHg, HR 84 bpm, RR 16/min to BP 186/62 mmHg, HR 46 bpm, and irregular Cheyne-Stokes respirations. What do these findings indicate?",
-        ["Hypovolemic shock from internal occult bleeding", "Cushing's triad indicating severe increased intracranial pressure and impending brainstem herniation", "Neurogenic shock secondary to cervical spine injury", "Early stage of septic shock"],
-        [1],
-        "CUSHING'S TRIAD = Brain Herniation Warning (Opposite of Shock!)",
-        "• 1. Widened Pulse Pressure with Severe Systolic Hypertension (e.g., 186/62 = 124 mmHg pulse pressure)\n• 2. Bradycardia (HR 46 bpm)\n• 3. Irregular Respirations (Cheyne-Stokes / Biot's)\n• Nursing Care: HOB 30°, Head midline (neutral), No hip flexion, No coughing/Valsalva, IV Mannitol",
-        "Cushing's triad (systolic hypertension with widened pulse pressure, reflex bradycardia, and irregular respirations) is a late, life-threatening sign of increased ICP indicating brainstem compression and impending herniation.",
-        "Bedside Pearl: Keep the head of bed at 30 degrees with the neck in strict neutral midline alignment to promote jugular venous drainage from the brain."],
-
-      ["Med-Surg", "Laminectomy & Spinal Surgery Post-Op Care", "single",
-        "A client is 6 hours post-lumbar laminectomy with spinal fusion. Which assessment and mobility rules must the nurse implement?",
-        ["Have the client dangle their legs at the bedside for 45 minutes and twist the torso to reach the call light", "Assess for urinary retention and lower extremity neurovascular function, log-roll the client with a pillow between the knees, and limit sitting to <= 30 minutes", "Elevate the head of the bed to 90 degrees and encourage lifting 15-lb weights", "Check only arm movement and diaphragm excursion"],
-        [1],
-        "SPINAL SURGERY Levels & Mobility Rules (Always LOG-ROLL!)",
-        "• Cervical (Neck) = Controls diaphragm & arms → Watch Breathing & Pneumonia!\n• Thoracic (Upper back) = Controls cough & abdomen → Watch Bowel sounds & Paralytic ileus!\n• Lumbar (Lower back) = Controls bladder & legs → Watch Urinary Retention & Leg function!\n• Mobility: Always LOG-ROLL as one unit! Do NOT dangle at edge of bed. Limit sitting <= 30 min. No lifting > 5 lbs for 6 weeks.",
-        "Lumbar spinal roots innervate the bladder and lower extremities, making urinary retention and leg sensation/movement the primary post-op checks. Log-rolling keeps the vertebral column in strict straight alignment.",
-        "NCLEX Trap: Never let a post-laminectomy patient twist their spine or dangle on the edge of the bed!"],
-
-      ["Med-Surg", "Burn Fluid Resuscitation (Parkland Formula)", "single",
-        "An adult client weighing 80 kg arrives in the ED with deep partial-thickness and full-thickness burns covering 50% of their total body surface area (TBSA). Using the Parkland formula (4 mL × kg × %TBSA), how many milliliters per hour of Lactated Ringer's should the nurse infuse during the FIRST 8 hours?",
-        ["500 mL/hr", "1,000 mL/hr", "2,000 mL/hr", "4,000 mL/hr"],
-        [1],
-        "PARKLAND FORMULA = 4 mL × kg × %TBSA (Half in First 8 Hours!)",
-        "• Total 24-hr Fluid = 4 mL × 80 kg × 50 = 16,000 mL Lactated Ringer's\n• Give 1/2 in the first 8 hours (from time of burn) = 8,000 mL ÷ 8 hrs = 1,000 mL/hr\n• Give remaining 1/2 over next 16 hours = 8,000 mL ÷ 16 hrs = 500 mL/hr\n• Best indicator of adequate fluid resuscitation = Urine Output 30–50 mL/hr!",
-        "Step 1: Calculate total 24-hour fluid = 4 mL × 80 kg × 50 = 16,000 mL. Step 2: Divide in half for the first 8 hours = 8,000 mL. Step 3: Divide 8,000 mL by 8 hours = 1,000 mL/hr.",
-        "NCLEX Trap: The 8-hour clock starts from the TIME OF THE BURN INJURY, not the time of arrival at the emergency department!"],
-
-      ["Med-Surg", "Acute Hemolytic Blood Transfusion Reaction", "single",
-        "Fifteen minutes after initiating a packed red blood cell (PRBC) transfusion, the client reports low back (flank) pain, chills, flushing, and chest tightness. What is the nurse's FIRST action?",
-        ["Slow the blood transfusion rate to 25 mL/hr and notify the provider", "Stop the transfusion immediately and keep the IV line open with new 0.9% Normal Saline tubing flushed at the hub", "Administer IV diphenhydramine 25 mg and resume the transfusion", "Collect a urine specimen for hemoglobinuria and then stop the blood"],
-        [1],
-        "STOP THE BLOOD FIRST — Never Flush the Blood Left in the Y-Tubing!",
-        "• Low back/flank pain + fever/chills within 15 min = Acute Hemolytic ABO Incompatibility!\n• Step 1: STOP the transfusion immediately\n• Step 2: Disconnect blood tubing at the IV hub and attach NEW 0.9% Normal Saline tubing to keep vein open\n• Step 3: Notify provider & blood bank, send blood bag + tubing + urine specimen",
-        "Low back/flank pain (from lysed RBC hemoglobin clogging renal tubules) and chills within the first 15 minutes indicate a lethal ABO acute hemolytic reaction. Stopping the blood immediately and disconnecting the blood tubing right at the catheter hub prevents any additional incompatible blood sitting in the line from entering the client.",
-        "NCLEX Trap: If you flush the existing Y-tubing with saline, you push 20–30 mL more incompatible blood sitting in the line directly into the patient!"],
-
-      ["Med-Surg", "Hiatal Hernia vs. Dumping Syndrome (Complete Opposites)", "single",
-        "A client who underwent a subtotal gastrectomy (Billroth II) reports dizziness, diaphoresis, palpitations, abdominal cramping, and diarrhea 20 minutes after eating lunch. Which dietary and positioning instructions should the nurse teach to prevent this complication?",
-        ["Sit upright in High Fowler's after meals, drink plenty of fluids with meals, and eat a high-carbohydrate diet", "Lie flat or in Low Fowler's on the left side for 30 minutes after meals, avoid drinking fluids with meals (drink 1 hour before/after), and eat small, low-carbohydrate, high-protein/fat meals", "Drink 2 glasses of sweetened fruit juice with every meal", "Eat 2 large meals per day rich in simple sugars"],
-        [1],
-        "'HIGH-atal' Hernia vs. 'LOW' Dumping Syndrome",
-        "• Hiatal Hernia = Food moves WRONG direction at right rate (GERD) → Goal: Empty stomach fast ('High-atal' = High HOB, high fluids with meals, high carbs, low fat/protein)\n• Dumping Syndrome = Food empties RIGHT direction at WRONG rate (too fast into duodenum → 'Drunk + Shock + Cramping') → Goal: Slow stomach emptying ('Low Dumping' = Low/flat HOB on side, LOW fluids with meals, low carbs, high protein/fat)",
-        "After gastric resection, hyperosmolar chyme dumps rapidly into the jejunum, drawing intravascular water into the gut lumen and causing hypovolemic shock symptoms ('Drunk + Shock') and diarrhea. Lying flat/side-lying after eating, withholding fluids during meals, and eating high protein/fat with low simple carbs slows gastric emptying.",
-        "NCLEX Trap: Hiatal Hernia and Dumping Syndrome have the exact opposite diets and positions—memorize 'High-atal' vs. 'Low Dumping'!"],
-
-      ["Med-Surg", "Sepsis & Septic Shock 1-Hour Bundle", "single",
-        "A client admitted with urosepsis has a temperature of 102.9°F (39.4°C), HR 128 bpm, BP 82/46 mmHg, and serum lactate of 4.6 mmol/L. The provider orders blood cultures × 2, broad-spectrum IV antibiotics, and 30 mL/kg 0.9% Normal Saline bolus. In what order should the nurse implement the microbiology and antibiotic orders?",
-        ["Administer IV antibiotics immediately, then draw blood cultures 2 hours later", "Obtain two sets of blood cultures first, then immediately initiate broad-spectrum IV antibiotics and rapid crystalloid fluids", "Wait for the 48-hour final culture sensitivity report before starting IV antibiotics", "Start IV norepinephrine first before giving any IV fluids or drawing cultures"],
-        [1],
-        "SURVIVING SEPSIS 1-HOUR BUNDLE = Cultures BEFORE Antibiotics!",
-        "• 1. Measure Serum Lactate (> 2 = tissue hypoperfusion; >= 4 or hypotension = give the 30 mL/kg bolus; re-measure if > 2)\n• 2. Obtain Blood Cultures × 2 sets BEFORE starting antibiotics\n• 3. Administer Broad-Spectrum IV Antibiotics STAT\n• 4. Infuse 30 mL/kg IV Crystalloid fluid bolus\n• 5. Start Norepinephrine (Levophed) if MAP remains < 65 mmHg after fluids",
-        "Blood cultures must be drawn prior to the first dose of IV antibiotics so the causative bacteria are not sterilized in the sample, followed immediately (without waiting for lab results) by broad-spectrum IV antibiotics and rapid crystalloid fluid resuscitation.",
-        "Bedside Pearl: Norepinephrine (Levophed) is the first-line vasopressor of choice in septic shock to maintain a Mean Arterial Pressure (MAP) >= 65 mmHg."],
-
-      // ==================== CATEGORY 2: PHARMACOLOGY (25 QUESTIONS) ====================
-      ["Pharmacology", "Digoxin Toxicity & Hypokalemia", "single",
-        "A client taking digoxin 0.25 mg daily and furosemide 40 mg daily reports anorexia, nausea, and seeing yellowish-green halos around lights. Apical heart rate is 48 bpm. Which laboratory value most likely precipitated this condition?",
-        ["Serum sodium of 142 mEq/L", "Serum potassium of 2.8 mEq/L", "Serum calcium of 9.2 mg/dL", "Digoxin level of 0.8 ng/mL"],
-        [1],
-        "DIGOXIN Toxicity (Level >= 2.0 ng/mL) = GI First + Yellow/Green Halos + Low K+ Trigger",
-        "• Therapeutic range: 0.5 – 2.0 ng/mL (>= 2.0 is Toxic!)\n• HYPOKALEMIA (< 3.5) sensitizes the heart to Digoxin → Toxicity!\n• Early signs: Anorexia, Nausea, Vomiting, Bradycardia, Yellow-Green visual halos\n• Hold if Apical Pulse < 60 bpm (Adults) or < 90 bpm (Infants) for 1 full minute\n• Antidote: Digoxin Immune Fab (Digibind)",
-        "Loop diuretics like furosemide waste potassium in the urine. Hypokalemia increases digoxin binding to Na+/K+-ATPase pumps in the myocardium, precipitating digoxin toxicity even at normal doses.",
-        "NCLEX Trap: Always auscultate the apical pulse for 1 FULL MINUTE before giving digoxin, and check the serum potassium level!"],
-
-      ["Pharmacology", "Lithium Carbonate Toxicity & Sodium Balance", "single",
-        "A client taking lithium carbonate for bipolar I disorder goes running on a hot summer day and develops profuse sweating, coarse hand tremors, metallic taste, ataxia, confusion, and severe diarrhea. Serum lithium is 2.1 mEq/L. What caused this acute rise in lithium level?",
-        ["Excessive dietary intake of table salt", "Sodium and fluid depletion causing the kidneys to reabsorb lithium", "Concurrent administration of acetaminophen", "Increased glomerular filtration rate from exercise"],
-        [1],
-        "LITHIUM (0.6–1.2 mEq/L) = Acts Like Sodium (Low Na+ or Dehydration = Toxic >= 2.0!)",
-        "• Therapeutic level: 0.6 – 1.2 mEq/L (>= 2.0 = Deadly Toxicity!)\n• Expected early S/E: Polyuria, Polydipsia, fine hand tremor, mild nausea\n• Toxicity: Fine/coarse tremors, metallic taste, severe diarrhea, ataxia, confusion\n• Teaching: Maintain normal sodium intake and drink 2–3 L water/day; avoid NSAIDs & diuretics",
-        "Lithium is a salt processed by the proximal renal tubules identically to sodium. When a client becomes dehydrated or hyponatremic (from sweating, vomiting, diarrhea, or diuretics), the kidneys avidly reabsorb lithium in place of sodium, causing acute lithium toxicity.",
-        "NCLEX Trap: Never tell a patient on Lithium to restrict salt! Low Sodium = High Lithium Toxicity."],
-
-      ["Pharmacology", "Warfarin (Coumadin) vs. Heparin Monitoring & Antidotes", "single",
-        "A client receiving warfarin (Coumadin) for atrial fibrillation has an INR of 5.8 and epistaxis (nosebleeds). Which medication should the nurse prepare to administer?",
-        ["Protamine sulfate", "Phytonadione (Vitamin K)", "Idarucizumab (Praxbind)", "Aminocaproic acid"],
-        [1],
-        "HEPARIN = PTT & Protamine | WARFARIN = PT/INR & Vitamin K",
-        "• HEParin → aPTT (1.5–2.5x control) → Antidote: Protamine Sulfate\n• WARFarin → PT/INR (Goal 2.0–3.0; Mechanical valve 2.5–3.5) → Antidote: Vitamin K (Phytonadione) + FFP for active life-threatening bleed\n• Keep Vitamin K intake (green leafy veggies) CONSISTENT—don't eliminate completely!",
-        "Warfarin inhibits hepatic synthesis of vitamin K-dependent clotting factors (II, VII, IX, X). An INR of 5.8 with active bleeding requires holding warfarin and administering Vitamin K (phytonadione).",
-        "NCLEX Trap: Clients on warfarin should eat a CONSISTENT amount of green leafy vegetables (spinach, kale, broccoli), rather than abruptly bingeing or eliminating them."],
-
-      ["Pharmacology", "T.A.P. Level Sequence (Trough, Administer, Peak)", "single",
-        "A client is receiving IV vancomycin every 12 hours, with the next 60-minute infusion scheduled for 09:00 AM. Using the T.A.P. rule for narrow therapeutic window drugs, when should the nurse draw the vancomycin Trough level and Peak level?",
-        ["Trough at 09:30 AM; Peak at 12:00 PM", "Trough at 08:30 AM (30 minutes before the dose); Administer at 09:00 AM; Peak at 10:15–10:30 AM (15–30 minutes after IV infusion completes)", "Trough at 06:00 AM; Peak immediately while the IV bag is starting", "Trough 2 hours after the dose; Peak 30 minutes before the dose"],
-        [1],
-        "T.A.P. Sequence for Narrow Therapeutic Drugs",
-        "• T = Trough: ALWAYS drawn 30 minutes BEFORE the next scheduled dose (regardless of drug or route!)\n• A = Administer: Give the prescribed medication dose\n• P = Peak: Drawn by route:\n  - Sublingual: 5–10 min after dissolved\n  - IV: 15–30 min after IV bag completes\n  - IM: 30–60 min after injection",
-        "The trough measures the lowest concentration of the drug in the bloodstream to ensure renal clearance and prevent nephrotoxicity/ototoxicity, so it is always drawn 30 minutes prior to hanging the next dose. An IV peak is drawn 15–30 minutes after the infusion finishes.",
-        "NCLEX Trap: Trough is ALWAYS 30 minutes before the next dose, no matter what drug or route is tested!"],
-
-      ["Pharmacology", "Insulin Timelines & Mixing ('RN' & DIE vs. DOA)", "single",
-        "At 07:30 AM, the nurse prepares to mix 10 units of Regular insulin (Humulin R) and 20 units of NPH insulin (Humulin N) in one syringe. How should the nurse draw up the insulins, and when will each insulin peak (highest risk of hypoglycemia)?",
-        ["Draw up NPH first, then Regular; Regular peaks in 8 hours", "Inject air into NPH (cloudy), inject air into Regular (clear), draw up Regular (clear) first, then draw up NPH (cloudy); Regular peaks in 2–4 hours and NPH peaks in 4–12 hours", "Mix Regular and Insulin Glargine (Lantus) in one syringe; Glargine peaks in 2 hours", "Give NPH by IV drip; no peak time exists"],
-        [1],
-        "RN = Regular (Clear) to NPH (Cloudy) | Master Insulin Onsets & Peaks!",
-        "• Lispro (Humalog): Onset 15 min | Peak 30–90 min | Duration 3–5 hr (Give WITH food!)\n• Regular (Humulin R): Onset 30–60 min | Peak 2–4 hr | Duration 5–8 hr (Clear; ONLY IV insulin!)\n• NPH (Intermediate): Onset 1–2 hr | Peak 4–12 hr | Duration 16–24 hr (Cloudy; NEVER give IV!)\n• Glargine (Lantus): Slow onset | NO PEAK (lowest hypoglycemia risk) | ~24 hr (Safe at bedtime; NEVER mix!)",
-        "To prevent contaminating the short-acting Regular vial with NPH proteins, inject air into NPH (cloudy), inject air into Regular (clear), draw up Regular (clear) first, then draw up NPH (cloudy) ('RN'). Regular peaks at 2–4 hours, and NPH peaks at 4–12 hours.",
-        "NCLEX Trap: Exercise acts like insulin (lower insulin dose or give fast-acting snack before exercise). On sick days, blood sugar rises—take insulin even if not eating and push fluids!"],
-
-      ["Pharmacology", "Aminoglycosides ('A Mean Old Mycin' & 'THRO' Exception)", "single",
-        "The nurse is reviewing medication orders for four clients. Which medication is an aminoglycoside that requires close monitoring of 24-hour creatinine clearance and cranial nerve VIII (hearing and balance), rather than a macrolide?",
-        ["Azithromycin (Zithromax)", "Erythromycin", "Gentamicin (or Tobramycin / Amikacin / Neomycin)", "Clarithromycin (Biaxin)"],
-        [2],
-        "'A Mean Old Mycin' vs. 'THRO' It Off the List!",
-        "• Aminoglycosides = Heavy-duty Gram-negative antibiotics ending in '-mycin' or '-micin' (Gentamicin, Tobramycin, Amikacin, Neomycin, Kanamycin, Streptomycin)\n• The 'THRO' Rule: If it has 'THRO' in the middle (AziTHROmycin, ClariTHROmycin, EryTHROmycin), THRO it off the list! Those are Macrolides, NOT Aminoglycosides!\n• Toxicities: EARS (Ototoxicity: tinnitus, vertigo, CN 8 damage) & KIDNEYS (Nephrotoxicity: monitor Creatinine & Trough!)",
-        "Gentamicin is a true aminoglycoside ('A Mean Old Mycin') that damages the eighth cranial nerve (ototoxicity) and renal tubules (nephrotoxicity). Azithromycin, clarithromycin, and erythromycin contain 'THRO' and are macrolides.",
-        "Bedside Pearl: Remember that human ears are shaped like kidneys—aminoglycosides attack both!"],
-
-      ["Pharmacology", "Calcium Channel Blockers & Arrhythmia Blueprint (ABCD)", "single",
-        "A client with supraventricular tachycardia (SVT) and atrial arrhythmia is prescribed IV adenosine, followed by oral diltiazem (Cardizem). What is the proper administration method for IV adenosine, and when must the nurse hold a calcium channel blocker?",
-        ["Infuse adenosine slowly over 30 minutes; hold diltiazem if HR is 80 bpm", "Administer adenosine via rapid IV push over 1–3 seconds followed immediately by a 20 mL Normal Saline flush; hold calcium channel blockers (-dipine, verapamil, diltiazem) if Systolic BP is < 100 mmHg", "Give adenosine intramuscularly; hold diltiazem if potassium is 4.0 mEq/L", "Defibrillate the client immediately while awake"],
-        [1],
-        "Atrial Arrhythmias = A.B.C.D. | Calcium Channel Blockers = 'Valium for Your Heart'",
-        "• Atrial Arrhythmias (A.B.C.D.):\n  - A = Adenosine (half-life < 10 sec → Slam IV push in 1–3 sec + 20 mL NS flush!)\n  - B = Beta-blockers (-olol)\n  - C = Calcium Channel Blockers (-dipine, Verapamil, Cardizem/Diltiazem → Hold if SBP < 100 mmHg!)\n  - D = Digoxin (Lanoxin)\n• Ventricular Arrhythmias (PVCs, V-Tach) = Amiodarone or Lidocaine\n• V-Fib = Defibrillate ('Shock 'em!') | Asystole = Epinephrine",
-        "Adenosine has an ultra-short half-life (< 10 seconds), requiring a rapid IV push close to the heart followed immediately by a fast normal saline flush. Calcium channel blockers relax vascular smooth muscle and myocardium ('Valium for your heart') and must be held if systolic BP is < 100 mmHg.",
-        "NCLEX Trap: Warn the patient and family that IV Adenosine causes a brief 3–5 second period of flatline (asystole) and chest flushing as the SA node resets!"],
-
-      ["Pharmacology", "Anti-Tuberculosis RIPE Therapy", "single",
-        "The nurse is educating a client starting RIPE therapy (Rifampin, Isoniazid, Pyrazinamide, Ethambutol) for active pulmonary tuberculosis. Which statement by the client indicates a correct understanding of the medication regimen?",
-        ["'I will call 911 immediately if my urine, sweat, or tears turn bright red-orange while taking Rifampin.'", "'I will take Vitamin B6 (pyridoxine) daily with Isoniazid to prevent numbness and tingling in my hands and feet.'", "'It is normal to lose my ability to distinguish red and green colors while taking Ethambutol.'", "'I can enjoy 2 glasses of red wine every evening while taking these medications.'"],
-        [1],
-        "R.I.P.E. Tuberculosis Meds Memory Key",
-        "• R = Rifampin → Red-orange body fluids (Normal! Stains soft contacts; decreases oral contraceptive efficacy)\n• I = Isoniazid (INH) → Peripheral Neuropathy (Give Vitamin B6 / Pyridoxine!) + Hepatotoxicity\n• P = Pyrazinamide → Gout / Hyperuricemia / Joint pain + Hepatotoxicity\n• E = Ethambutol → Eyes (Optic neuritis: Loss of red-green color vision — Report to MD!)\n• ALL 4 are Hepatotoxic = Strictly NO Alcohol!",
-        "Isoniazid depletes pyridoxine (Vitamin B6), causing peripheral neuritis; daily Vitamin B6 supplementation prevents this. Red-orange body fluids with rifampin are expected, whereas loss of red-green vision on ethambutol indicates toxic optic neuritis and must be reported.",
-        "NCLEX Trap: All TB medications are hepatotoxic—instruct the client to avoid alcohol and acetaminophen and report jaundice or dark tea-colored urine."],
-
-      ["Pharmacology", "ACE Inhibitors (Lisinopril / Enalapril) Side Effects", "sata",
-        "The nurse is assessing a client who started lisinopril 2 weeks ago for hypertension and heart failure. Which adverse effects are specifically associated with ACE inhibitors? (Select all that apply.)",
-        ["Persistent, dry, nagging cough", "Swelling of the lips, tongue, and face (angioedema)", "Hyperkalemia (Serum K+ > 5.0 mEq/L)", "Severe hypokalemia (Serum K+ < 3.0 mEq/L)", "Fetal toxicity / Teratogenicity during pregnancy"],
-        [0, 1, 2, 4],
-        "ACE Inhibitors (-PRIL) = P.R.I.L. Side Effects",
-        "• P = Pregnancy Contraindicated (Teratogenic) & Persistent Dry Cough (from bradykinin buildup)\n• R = Renal artery stenosis caution / Rising Potassium (Hyperkalemia — inhibits aldosterone!)\n• I = Initial 1st-dose hypotension\n• L = Lip & Tongue Swelling = ANGIOEDEMA (Airway emergency!)",
-        "ACE inhibitors block the conversion of angiotensin I to II (decreasing aldosterone, which retains potassium -> hyperkalemia) and prevent breakdown of bradykinin (causing a persistent dry cough and potentially fatal angioedema). They are strictly teratogenic in pregnancy.",
-        "NCLEX Trap: Angioedema (swollen lips/tongue/airway) can occur at any time on an ACE inhibitor and is an immediate airway emergency!"],
-
-      ["Pharmacology", "Beta-Blockers (-olol) in Asthma & Diabetes", "single",
-        "A client with hypertension, heart failure, and a history of severe persistent asthma is prescribed propranolol (Inderal). Why should the nurse question this prescription?",
-        ["Propranolol is a non-selective beta-blocker (beta-1 and beta-2) that causes bronchospasm in clients with asthma", "Propranolol causes severe reflex tachycardia and hypertension", "Propranolol only blocks alpha-1 receptors in the bladder", "Propranolol causes permanent staining of tooth enamel"],
-        [0],
-        "1 Heart (Beta-1) vs. 2 Lungs (Beta-2) + Masks Hypoglycemia!",
-        "• Cardioselective Beta-1 Blockers (A through M: Atenolol, Bisoprolol, Esmolol, Metoprolol) → Target 1 Heart\n• Non-Selective Beta-1 & Beta-2 Blockers (N through Z: Nadolol, Propranolol, Sotalol, Timolol — plus the exceptions Carvedilol & Labetalol, which also block alpha-1) → Block Beta-2 in lungs → BRONCHOSPASM in Asthma/COPD!\n• Beta-blockers also MASK tachycardia/tremors of hypoglycemia in diabetics (sweating/diaphoresis is NOT masked!)",
-        "Propranolol blocks both Beta-1 (cardiac) and Beta-2 (bronchial smooth muscle) receptors, inducing severe bronchoconstriction in asthmatic clients.",
-        "NCLEX Trap: Beta-blockers mask tachycardia and tremors during hypoglycemia, so teach diabetic clients that diaphoresis (cold clammy sweats) is their key warning sign!"],
-
-      ["Pharmacology", "MAO Inhibitors (Marplan, Nardil, Parnate) & Tyramine 'BAR'", "single",
-        "A client taking phenelzine (Nardil) for depression attends a dinner party and presents to the ED with a severe occipital headache, stiff neck, diaphoresis, and BP of 224/126 mmHg. Which foods must clients on MAOIs strictly avoid, and what is the IV antidote?",
-        ["Cottage cheese and mozzarella cheese; administer IV atropine", "Salad 'BAR' foods (Bananas, Avocados, Raisins/dried fruit), aged cheeses, organ/cured meats, wine, chocolate, and soy sauce; administer IV phentolamine", "Grilled chicken breast and steamed rice; administer IV naloxone", "Fresh apples and bottled water; administer IV flumazenil"],
-        [1],
-        "MAOI Meds (Marplan, Nardil, Parnate) = NO Tyramine & NO Salad 'B.A.R.'!",
-        "• Strictly avoid TYRAMINE to prevent fatal Hypertensive Crisis:\n  - No Salad 'B.A.R.' = Bananas (overripe), Avocados, Raisins / dried fruits\n  - No Aged cheeses (Cheddar, Swiss, Blue — Note: Cottage cheese, Ricotta & Mozzarella are unaged and FINE!)\n  - No Organ meats, cured/smoked meats (salami, pepperoni), red wine/beer, chocolate, soy sauce, or caffeine\n• Antidote for Hypertensive Crisis = Phentolamine",
-        "MAOIs inhibit monoamine oxidase, preventing the breakdown of tyramine and catecholamines. Ingesting tyramine-rich foods triggers massive norepinephrine release and lethal hypertensive crisis.",
-        "NCLEX Trap: Cottage cheese, cream cheese, and mozzarella are unaged cheeses and are SAFE on an MAOI!"],
-
-      ["Pharmacology", "Psychopharmacology: Sertraline ('SAD Head') vs. Haloperidol (NMS)", "single",
-        "A client taking sertraline (Zoloft) begins taking St. John's Wort at home and develops sweating, apprehension, dizziness, headache ('SAD Head'), clonus, and hyperreflexia. A second client on haloperidol (Haldol) develops a fever of 105.4°F (40.8°C) and 'lead-pipe' muscle rigidity. How does the nurse differentiate these two emergencies?",
-        ["Both are benign extrapyramidal side effects treated with benztropine", "Client 1 has Serotonin Syndrome (from SSRI + St. John's Wort); Client 2 has Neuroleptic Malignant Syndrome (NMS from Haloperidol — differentiated from EPS by checking the extreme temperature!)", "Client 1 has agranulocytosis; Client 2 has lithium toxicity", "Both clients have Wernicke-Korsakoff syndrome"],
-        [1],
-        "Serotonin Syndrome ('SAD Head' + Clonus) vs. Haldol NMS (Fever > 105°F + Lead-Pipe Rigidity)",
-        "• Sertraline (Zoloft) + St. John's Wort = Serotonin Syndrome ('SAD Head': Sweating, Apprehension, Dizziness, Headache + Hyperreflexia/Clonus)\n• Haloperidol (Haldol) = Risk of Neuroleptic Malignant Syndrome (NMS): Extreme fever (> 105°F), lead-pipe rigidity, autonomic instability → Differentiate NMS from routine EPS by taking the patient's TEMPERATURE!\n• Fluoxetine (Prozac) = Causes insomnia → Give before 12:00 Noon!",
-        "Combining an SSRI with St. John's Wort causes Serotonin Syndrome, whereas typical antipsychotics like haloperidol can trigger Neuroleptic Malignant Syndrome (NMS), a hypermetabolic dopamine-blockade crisis distinguished from routine EPS by skyrocketing fever (> 105°F).",
-        "Bedside Pearl: Also remember Sertraline (Zoloft) interacts with Warfarin (increases bleeding risk), and Phenothiazines ('-zine') have 'ABCDEFG' side effects (including Foto-sensitivity & aGranulocytosis)!"],
-
-      ["Pharmacology", "Clozapine (Clozaril) & Phenothiazine Agranulocytosis", "single",
-        "A client with treatment-resistant schizophrenia is prescribed clozapine (Clozaril). Which symptom reported by the client requires an IMMEDIATE stat Complete Blood Count (CBC) with differential?",
-        ["Mild weight gain of 2 pounds over a month", "Sore throat, fever of 101.4°F (38.6°C), and flu-like malaise", "Increased salivation on the pillow at night", "Mild orthostatic dizziness when standing up quickly"],
-        [1],
-        "CLOZAPINE = Check the ANC (Fatal Agranulocytosis!)",
-        "• Clozapine (and '-zine' phenothiazines) can wipe out white blood cells (Agranulocytosis / Severe Neutropenia)\n• Regular ANC monitoring (weekly for the first 6 months, then less often per labeling)\n• Report sore throat, fever, chills, or mouth ulcers IMMEDIATELY!\n• ANC < 1,000 = hold clozapine & notify provider; ANC < 500 = severe neutropenia → neutropenic precautions!",
-        "Clozapine carries a black-box warning for severe neutropenia/agranulocytosis. Fever and sore throat are classic early signs of opportunistic infection secondary to bone marrow suppression.",
-        "Bedside Pearl: If ANC drops < 500 (Neutropenic Precautions): Private room, strict handwashing, vitals q4h, NO fresh flowers/potted plants, NO raw fruits/veggies, NO standing water > 15 min!"],
-
-      ["Pharmacology", "Phenytoin (Dilantin) Care & Toxicity", "sata",
-        "The nurse is caring for a client receiving phenytoin (Dilantin) for tonic-clonic seizures. Which nursing interventions and client teachings are correct? (Select all that apply.)",
-        ["Instruct the client to perform meticulous oral hygiene, use a soft toothbrush, and visit the dentist regularly for gingival hyperplasia", "Monitor serum phenytoin levels (therapeutic range 10–20 mcg/mL) and assess for ataxia, nystagmus, or slurred speech", "Infuse IV phenytoin diluted in 5% Dextrose in Water (D5W) at 100 mg/min", "Stop taking the medication immediately once seizure-free for 6 months", "Report any new skin rash immediately (risk of Stevens-Johnson syndrome)"],
-        [0, 1, 4],
-        "PHENYTOIN (10–20 mcg/mL) = Gums, Gait (Ataxia), & ONLY Normal Saline!",
-        "• Therapeutic range: 10 – 20 mcg/mL (>= 20 is Toxic!)\n• Common benign S/E: Gingival hyperplasia (swollen gums → soft toothbrush, regular dental care)\n• Toxicity (>= 20 mcg/mL): Ataxia (unsteady gait), Slurred speech, Nystagmus\n• IV Rule: ONLY mix/flush with 0.9% Normal Saline (Precipitates/crystallizes in Dextrose!) & infuse <= 50 mg/min",
-        "Phenytoin causes gingival hyperplasia (a benign side effect managed with oral hygiene), has a narrow therapeutic window of 10–20 mcg/mL (toxicity causes cerebellar signs: ataxia, slurred speech, nystagmus), and can trigger Stevens-Johnson syndrome. IV phenytoin crystallizes in dextrose.",
-        "NCLEX Trap: NEVER mix IV phenytoin with Dextrose (D5W) and never stop anticonvulsants abruptly (triggers status epilepticus)!"],
-
-      ["Pharmacology", "Magnesium Sulfate Toxicity in Preeclampsia", "single",
-        "A client with severe preeclampsia is receiving a continuous IV infusion of magnesium sulfate at 2 g/hr. Assessment reveals respiratory rate of 10 breaths/min, absent patellar deep tendon reflexes (0+), and urine output of 18 mL/hr. What is the nurse's FIRST action?",
-        ["Decrease the magnesium sulfate infusion rate to 1 g/hr and reassess in 1 hour", "Stop the magnesium sulfate infusion immediately and prepare to administer IV Calcium Gluconate", "Administer IV hydralazine 10 mg push", "Place the client in Trendelenburg position"],
-        [1],
-        "BURP Assessment for Magnesium Sulfate Toxicity (Antidote = Calcium Gluconate)",
-        "• Therapeutic OB range: 4 – 7 mEq/L (Magnesium acts as a CNS sedative!)\n• Monitor B.U.R.P. every hour:\n  - B = Blood pressure decreases\n  - U = Urine output MUST be >= 30 mL/hr (Excreted by kidneys! Oliguria = Toxicity!)\n  - R = Respirations MUST be >= 12/min\n  - P = Patellar Deep Tendon Reflexes (Loss of DTRs is the FIRST sign of toxicity!)\n• Antidote: 10% Calcium Gluconate IV",
-        "Loss of deep tendon reflexes (DTRs), respiratory depression (< 12/min), and oliguria (< 30 mL/hr) indicate life-threatening magnesium toxicity. Stop the infusion immediately and administer IV calcium gluconate.",
-        "NCLEX Trap: Absent DTRs occur first at Mg levels > 7–8 mEq/L, followed by respiratory arrest and cardiac arrest."],
-
-      ["Pharmacology", "Oxytocin (Pitocin) & Uterine Tachysystole (LION)", "single",
-        "A client in labor is receiving an IV oxytocin (Pitocin) infusion for labor augmentation. The fetal heart rate strip shows late decelerations and uterine contractions occurring every 90 seconds lasting 100 seconds with minimal resting tone. What is the nurse's FIRST action?",
-        ["Increase the oxytocin infusion rate to speed up delivery", "Stop the oxytocin infusion immediately, reposition the client onto her left side, increase IV fluids, apply 10L oxygen mask, and notify the provider (LION)", "Prepare the client for an immediate amniotomy", "Perform a vaginal exam to check for cervical dilation"],
-        [1],
-        "STOP PITOCIN FIRST + Run L.I.O.N. for Late Decels / Tachysystole",
-        "• If Pitocin is running → STOP Pitocin first!\n• L = Left side position (relieves vena cava compression)\n• I = Increase IV fluids (bolus increases placental perfusion)\n• O = Oxygen by mask (8–10 L/min)\n• N = Notify HCP STAT",
-        "Contractions occurring more than 5 in 10 minutes or lasting > 90 seconds represent uterine tachysystole, which clamps down on uteroplacental blood vessels and causes fetal hypoxia (late decelerations). Discontinuing oxytocin and executing LION restores fetal oxygenation.",
-        "NCLEX Trap: Whenever an infusion (Oxytocin, Blood, Magnesium, Heparin) is actively harming the patient, TURN OFF THE INFUSION FIRST!"],
-
-      ["Pharmacology", "Disulfiram (Antabuse) & Naltrexone Aversion Therapy", "single",
-        "The nurse is providing discharge teaching to a client prescribed disulfiram (Antabuse) for alcohol use disorder. Which instruction is critical for the client to follow?",
-        ["'Disulfiram starts working immediately today and leaves your system within 4 hours of stopping.'", "'You must not have any alcohol for at least 12 hours before the first dose, and a reaction can still happen up to 2 weeks after the last dose, so avoid hidden alcohol such as vanilla extract, alcohol-based mouthwash, aftershave, alcohol hand sanitizer, cough syrups, sauces, and vinegars.'", "'Small amounts of alcohol in mouthwash or cough syrup are safe because so little is swallowed.'", "'If you drink alcohol on disulfiram, you will only experience mild drowsiness.'"],
-        [1],
-        "ANTABUSE (Disulfiram) = 12 Hours Sober Before + 2 Weeks of Risk After + NO Hidden Alcohol!",
-        "• No alcohol for at least 12 hours before the first dose\n• Reaction possible for up to 2 weeks after stopping!\n• Strictly avoid ALL alcohol sources:\n  - No vanilla extract, wine sauces, or vinegars\n  - No alcohol mouthwash (Listerine), liquid cold/cough syrups (NyQuil/elixirs)\n  - No aftershaves, colognes, or alcohol hand sanitizers",
-        "Disulfiram blocks aldehyde dehydrogenase, causing toxic acetaldehyde buildup if exposed to even trace amounts of ethanol (throbbing headache, projectile vomiting, hypotension, respiratory depression). Effects persist for 2 weeks after the last dose.",
-        "NCLEX Trap: Even trace alcohol (mouthwash, vanilla extract, sauces, vinegars, sanitizer, aftershave) can trigger a reaction—teach the client to read every label and carry a medication alert card."],
-
-      ["Pharmacology", "Acetaminophen (Tylenol) Overdose & N-Acetylcysteine", "single",
-        "A client is brought to the ED after ingesting 25 grams of acetaminophen (Tylenol) 4 hours ago. Which organ is at greatest risk for acute failure, and what specific antidote should the nurse prepare to administer?",
-        ["Kidneys; administer sodium bicarbonate", "Liver (hepatotoxicity); administer N-acetylcysteine (Mucomyst / Acetadote)", "Heart; administer atropine sulfate", "Lungs; administer albuterol"],
-        [1],
-        "TYLENOL (Acetaminophen) Max = 4,000 mg/day | Antidote = Acetylcysteine (NAC)",
-        "• Max safe adult dose = 4,000 mg/day (3,000 mg/day in older adults, < 2,000 mg in liver disease)\n• Toxic metabolite (NAPQI) destroys the LIVER (Check AST, ALT, Bilirubin, PT/INR)\n• Antidote: N-Acetylcysteine (NAC) — smells like rotten eggs when given PO!",
-        "Acetaminophen overdose depletes hepatic glutathione reserves, causing centrilobular liver necrosis. N-acetylcysteine replenishes glutathione stores to prevent acute fulminant liver failure.",
-        "Bedside Pearl: Mix oral N-acetylcysteine with juice or soda in a covered cup with a straw to mask the strong sulfur ('rotten egg') odor."],
-
-      ["Pharmacology", "Cholinergic Crisis vs. Anticholinergic Toxicity", "single",
-        "A farmer exposed to organophosphate insecticide spray arrives at the ED with profuse salivation, lacrimation, urination, diarrhea, bradycardia (HR 42 bpm), bronchorrhea, and pinpoint pupils. Which medication is the priority life-saving antidote?",
-        ["Physostigmine", "Atropine sulfate IV (followed by Pralidoxime)", "Pilocarpine", "Bethanechol"],
-        [1],
-        "SLUDGE + Killer B's (Wet Cholinergic) vs. Mad/Blind/Red/Dry (Anticholinergic)",
-        "• Cholinergic / Organophosphate Poisoning = S.L.U.D.G.E. (Salivation, Lacrimation, Urination, Diarrhea, GI cramps, Emesis) + Killer B's (Bradycardia, Bronchorrhea, Bronchospasm) → Antidote: ATROPINE!\n• Anticholinergic Toxicity (Atropine overdose) = 'Can't see, can't pee, can't spit, can't poop' → Antidote: PHYSOSTIGMINE!",
-        "Organophosphates irreversibly inhibit acetylcholinesterase, flooding synapses with acetylcholine (SLUDGE + Killer B's). Atropine competitively blocks muscarinic receptors to dry drowning bronchial secretions and reverse bradycardia.",
-        "NCLEX Trap: Bronchorrhea and bronchospasm ('drowning in secretions') are the #1 cause of death in cholinergic toxicity—titrate Atropine until lung sounds clear!"],
-
-      ["Pharmacology", "Statins (Atorvastatin / Rosuvastatin) & Rhabdomyolysis", "single",
-        "A client taking atorvastatin (Lipitor) 80 mg daily calls the clinic reporting severe, unexplained muscle aches and weakness in the calves and thighs, along with dark cola-colored urine. What should the nurse instruct the client to do?",
-        ["Take ibuprofen and continue the atorvastatin as prescribed", "Stop taking the atorvastatin immediately and come in for stat serum Creatine Kinase (CK/CPK) and renal function labs", "Drink 1 glass of grapefruit juice daily to help metabolize the medication", "Switch from taking the pill in the evening to taking it at breakfast"],
-        [1],
-        "STATINS (-statin) = Watch Muscle Pain (Rhabdo), Liver & Grapefruit!",
-        "• Muscle pain/tenderness + Dark tea/cola urine = RHABDOMYOLYSIS!\n• Skeletal muscle breakdown releases myoglobin → Clogs renal tubules → Acute Kidney Injury (AKI)!\n• Labs: Markedly elevated CK (CPK), elevated K+, elevated Creatinine\n• Avoid Grapefruit juice (inhibits CYP3A4 → toxic statin levels)\n• Simvastatin/lovastatin: take in the evening; atorvastatin & rosuvastatin work any time of day",
-        "Unexplained myalgia with dark urine indicates rhabdomyolysis, where skeletal muscle breakdown releases nephrotoxic myoglobin into the bloodstream. The statin must be held immediately and serum CK and renal function evaluated.",
-        "NCLEX Trap: Grapefruit juice inhibits intestinal CYP3A4 enzymes, dangerously raising blood levels of statins, calcium channel blockers, cyclosporine, and buspirone!"],
-
-      ["Pharmacology", "Spironolactone vs. Furosemide (Diuretic Potassium Rules)", "single",
-        "A client with heart failure and cirrhosis is prescribed spironolactone (Aldactone) 50 mg PO daily. Which dietary instruction should the nurse provide to this client?",
-        ["'Eat plenty of bananas, oranges, avocados, and baked potatoes every day.'", "'Use a potassium-containing salt substitute (like NoSalt or Nu-Salt) liberally on your meals.'", "'Avoid high-potassium foods and salt substitutes while taking this medication.'", "'Take this medication late at night right before going to bed.'"],
-        [2],
-        "S.P.I.R.O.N.O.L.A.C.T.O.N.E. = S-P-ares Potassium!",
-        "• Loop (Furosemide/Bumetanide) & Thiazide (HCTZ) Diuretics = Lose K+ (Hypokalemia)\n• Potassium-Sparing Diuretics (Spironolactone, Eplerenone, Triamterene, Amiloride) = KEEP K+ (Hyperkalemia Risk!)\n• Salt substitutes contain high amounts of Potassium Chloride!",
-        "Spironolactone is an aldosterone antagonist (potassium-sparing diuretic) that causes the kidneys to retain potassium. Consuming potassium-rich foods or potassium-based salt substitutes can cause fatal hyperkalemia.",
-        "NCLEX Trap: Always give diuretics in the MORNING so nocturnal diuresis doesn't cause falls when rushing to the bathroom at night!"],
-
-      ["Pharmacology", "Sildenafil (Viagra) + Nitroglycerin Contraindication", "single",
-        "A 58-year-old male client in the ED with chest pain is prescribed sublingual nitroglycerin. Before administering the tablet, which question is most critical for the nurse to ask?",
-        ["'Have you taken sildenafil (Viagra), tadalafil (Cialis), or vardenafil within the last 24 to 48 hours?'", "'Do you have a history of seasonal environmental allergies?'", "'Did you eat a meal containing carbohydrates within the past 2 hours?'", "'Do you experience occasional mild headaches?'"],
-        [0],
-        "NITRO + PDE-5 Inhibitors (-afil) = Fatal Refractory Hypotension!",
-        "• Never combine Nitrates (Nitroglycerin, Isosorbide) with PDE-5 Inhibitors (Sildenafil, Tadalafil, Vardenafil)\n• Both increase cGMP → Profound, irreversible vasodilation and cardiovascular collapse!\n• Normal expected side effect of Nitroglycerin = Throbbing headache & orthostatic dizziness (Means the pill is potent and working!)",
-        "Co-administration of nitrates and phosphodiesterase-5 (PDE-5) inhibitors causes synergistic systemic vasodilation and life-threatening, refractory hypotension.",
-        "Bedside Pearl: Teach clients to keep nitroglycerin in its original dark glass bottle, replace every 6 months, and take up to 3 doses 5 minutes apart (call 911 if pain persists 5 minutes after the 1st dose!)."],
-
-      ["Pharmacology", "Alendronate (Fosamax) Administration Rules", "single",
-        "The nurse is administering alendronate (Fosamax) to a client with postmenopausal osteoporosis. Which administration procedure is required to prevent a severe complication of this medication?",
-        ["Administer at bedtime with 4 oz of warm milk and have the client lie flat immediately", "Administer first thing in the morning on an empty stomach with a full 8-oz glass of plain water, and keep the client sitting upright for at least 30 minutes", "Crush the tablet and mix it into applesauce with a calcium carbonate tablet", "Administer with orange juice 15 minutes after breakfast"],
-        [1],
-        "BISPHOSPHONATES (-dronate) = Empty Stomach, Full Water, Upright 30 Min!",
-        "• Risk: Severe corrosive esophagitis / esophageal ulceration & Osteonecrosis of the jaw\n• 1. Take first thing in the morning on an EMPTY stomach (30 min before food/other meds)\n• 2. Drink a FULL 8-oz glass of PLAIN water (not juice, coffee, or mineral water)\n• 3. Sit or stand completely UPRIGHT for 30–60 minutes after taking!",
-        "Bisphosphonates have very poor oral bioavailability and are highly caustic to the esophageal mucosa. Taking with a full glass of plain water on an empty stomach and remaining upright for 30 minutes ensures passage into the stomach and prevents chemical esophagitis.",
-        "NCLEX Trap: Also instruct the client to report any jaw pain or loose teeth before dental extractions (risk of osteonecrosis of the jaw)."],
-
-      ["Pharmacology", "Levothyroxine (Synthroid) & Pre-Op Myxedema Rule", "single",
-        "A client with primary hypothyroidism is prescribed levothyroxine (Synthroid) daily and is scheduled for morning surgery. Which rule applies to levothyroxine administration?",
-        ["Take in the morning on an empty stomach, separate from iron/calcium by 4 hours, and NEVER hold levothyroxine before surgery without an explicit MD order (and never sedate a hypothyroid patient heavily due to Myxedema Coma risk)", "Hold levothyroxine for 7 days prior to any surgical procedure", "Take the medication only on days when feeling cold or sluggish", "Take simultaneously with calcium carbonate"],
-        [0],
-        "LEVOTHYROXINE = Morning Empty Stomach + Never Hold Pre-Op!",
-        "• Take early morning on an empty stomach (prevents insomnia & maximizes absorption)\n• Separate from Calcium, Iron, and Antacids by 4 hours\n• NEVER hold Synthroid before surgery without an explicit MD order!\n• Hypothyroid patients have slow metabolism → NEVER sedate heavily (triggers fatal Myxedema Coma!)",
-        "Levothyroxine replaces endogenous T4 hormone. Holding it preoperatively or administering full-dose sedatives/opioids to a hypothyroid client can precipitate life-threatening Myxedema Coma (severe hypothermia, bradycardia, hypotension, respiratory failure).",
-        "NCLEX Trap: Never switch brands of levothyroxine without rechecking TSH, and never stop taking it once thyroid levels normalize—therapy is lifelong!"],
-
-      ["Pharmacology", "Metformin (Glucophage) & IV Iodinated Contrast Dye", "single",
-        "A client with Type 2 diabetes who takes metformin (Glucophage) 1,000 mg twice daily is scheduled for a coronary angiogram with IV iodinated contrast dye this morning. What action must the nurse take regarding the metformin?",
-        ["Give double the morning dose of metformin to prevent stress hyperglycemia during the procedure", "Hold the metformin on the day of the procedure and for 48 hours afterward until normal renal function (creatinine) is verified", "Switch the metformin to IV infusion during the angiogram", "Continue the metformin normally without checking kidney labs"],
-        [1],
-        "METFORMIN + Contrast Dye = Hold 48 Hours (Lactic Acidosis Risk!)",
-        "• IV iodinated contrast dye can cause Contrast-Induced Nephropathy (AKI)\n• If kidneys slow down while Metformin is in the blood → Metformin accumulates → Fatal LACTIC ACIDOSIS!\n• Rule: Hold Metformin prior to/at the time of contrast and for 48 hours AFTER, and verify normal serum Creatinine before restarting!",
-        "Iodinated contrast media can acutely impair renal tubular function. If renal clearance decreases while metformin is circulating, metformin accumulates and triggers life-threatening lactic acidosis.",
-        "Bedside Pearl: Also encourage oral or IV hydration with 0.9% Normal Saline before and after contrast dye administration to flush the kidneys. (Some current radiology guidance allows continuing metformin when eGFR is >= 30 with no AKI—follow facility protocol; the classic exam answer is still to hold it.)"],
-
-      // ==================== CATEGORY 3: MATERNAL-NEWBORN & PEDS (25 QUESTIONS) ====================
-      ["OB & Peds", "Fetal Heart Rate Decelerations (VEAL CHOP)", "single",
-        "The nurse is interpreting an electronic fetal heart rate monitor strip for a laboring client. The strip displays abrupt, V-shaped drops in the fetal heart rate from 140 bpm to 90 bpm that vary in onset relative to contractions. What is the cause of this pattern, and what is the priority intervention?",
-        ["Fetal head compression; continue routine monitoring", "Umbilical cord compression (Variable decelerations); reposition the client from side to side or into knee-chest position", "Uteroplacental insufficiency (Late decelerations); prepare for immediate forceps delivery", "Normal fetal acceleration; document reassuring strip"],
-        [1],
-        "V.E.A.L. C.H.O.P. Fetal Heart Rate Monitoring Master Key",
-        "• V = Variable Decels (Abrupt V/W shape) → C = Cord Compression (Reposition side-to-side or Knee-Chest, Amnioinfusion!)\n• E = Early Decels (Mirrors contraction) → H = Head Compression (Normal benign finding in active labor — Document!)\n• A = Accelerations (15×15) → O = Okay / Well-Oxygenated!\n• L = Late Decels (Starts AFTER peak of contraction) → P = Placental Insufficiency (Stop Pitocin + LION STAT!)",
-        "Abrupt V- or W-shaped drops in FHR are variable decelerations caused by umbilical cord compression. Repositioning the mother from side to side or into knee-chest position relieves mechanical pressure on the umbilical cord.",
-        "NCLEX Trap: Variable = Cord compression (Reposition first); Late = Placental insufficiency (Stop Pitocin, Left side, Increase IV, Oxygen 10L mask, Notify MD)."],
-
-      ["OB & Peds", "Umbilical Cord Prolapse Emergency", "single",
-        "Immediately after spontaneous rupture of membranes (SROM), the nurse observes the umbilical cord protruding from the client's vagina and the fetal heart rate drops to 70 bpm. What is the nurse's FIRST priority action?",
-        ["Attempt to push the umbilical cord back inside the uterus so it stays warm", "Don a sterile glove, insert two fingers into the vagina to lift the fetal presenting part off the cord, and place the client in knee-chest or Trendelenburg position while calling for emergency C-section", "Cover the cord with a dry sterile towel and wait 15 minutes", "Encourage the client to push forcefully with the next contraction"],
-        [1],
-        "CORD PROLAPSE = Push Head Off Cord with Gloved Fingers & Knee-Chest Position!",
-        "• 1. Call for help immediately & don sterile glove\n• 2. Insert 2 fingers into vagina to push the fetal presenting part UP and OFF the prolapsed cord\n• 3. Position mother in Knee-Chest or Trendelenburg (gravity pulls fetus off pelvis)\n• 4. Wrap exposed cord in warm sterile saline-soaked gauze (NEVER push cord back in!)",
-        "Compression of the prolapsed cord between the fetal presenting part and maternal pelvis cuts off fetal blood and oxygen supply. The nurse must manually elevate the presenting part off the cord and keep the hand in place all the way to the OR for an emergency cesarean birth.",
-        "NCLEX Trap: Never try to push an exposed umbilical cord back into the vagina—it causes vasospasm and kinking!"],
-
-      ["OB & Peds", "Placenta Previa vs. Abruptio Placentae", "single",
-        "A client at 34 weeks gestation arrives at the Labor & Delivery unit reporting sudden, painless, bright red vaginal bleeding. Her uterus is soft, relaxed, and non-tender, and the fetal heart rate is 145 bpm. Which action is STRICTLY CONTRAINDICATED?",
-        ["Applying an external fetal heart rate and tocodynamometer monitor", "Performing a sterile digital vaginal (cervical) examination", "Initiating large-bore IV access and drawing a type and crossmatch", "Positioning the client in a side-lying position"],
-        [1],
-        "PREVIA = Painless Bright Red (NO Vaginal Exams!) | ABRUPTIO = Painful Rigid Board-Like",
-        "• Placenta Previa = Placenta covers cervix → PAINLESS bright red bleeding, soft uterus → NEVER do a digital vaginal exam (will puncture placenta & cause fatal hemorrhage)!\n• Abruptio Placentae = Premature separation → PAINFUL dark red bleeding, rigid 'board-like' tender uterus, fetal distress, DIC risk!",
-        "Painless bright red third-trimester bleeding with a soft uterus is classic for placenta previa. Performing a digital cervical examination can perforate the low-lying placenta and cause catastrophic maternal-fetal hemorrhage.",
-        "NCLEX Trap: Always perform a transabdominal ultrasound to confirm placental location BEFORE anyone performs a vaginal exam on a bleeding pregnant patient!"],
-
-      ["OB & Peds", "Shoulder Dystocia (McRoberts & Suprapubic Pressure)", "single",
-        "During vaginal delivery, the fetal head emerges but immediately retracts tightly against the maternal perineum ('turtle sign'), indicating anterior shoulder dystocia. Which nursing actions should be performed immediately?",
-        ["Apply vigorous fundal pressure to push the fetus out", "Flex the mother's thighs sharply against her abdomen (McRoberts maneuver) and apply firm suprapubic pressure", "Instruct the mother to lie completely flat with legs extended", "Pull firmly downward on the fetal head and neck"],
-        [1],
-        "TURTLE SIGN (Shoulder Dystocia) = McRoberts + Suprapubic Pressure (NEVER Fundal!)",
-        "• Turtle Sign = Fetal head delivers then pulls back into perineum\n• 1. McRoberts Maneuver: Hyperflex maternal thighs tightly against abdomen (flattens sacrum & widens pelvic outlet)\n• 2. Suprapubic Pressure: Press directly above pubic symphysis to dislodge anterior shoulder under pubic bone\n• NEVER apply Fundal Pressure (impacts shoulder worse & ruptures uterus!)",
-        "McRoberts maneuver (hyperflexing the maternal legs onto the abdomen) combined with suprapubic pressure rotates and dislodges the impacted anterior fetal shoulder from behind the maternal symphysis pubis.",
-        "NCLEX Trap: NEVER apply fundal pressure during shoulder dystocia—it wedges the shoulder tighter against the pubic bone and causes brachial plexus (Erb's palsy) injury or uterine rupture!"],
-
-      ["OB & Peds", "Stage 4 Recovery Postpartum Hemorrhage: 4 Tasks Every 15 Min", "single",
-        "During Stage 4 of labor (the first 2 hours postpartum), the nurse assesses a client every 15 minutes and finds heavy lochia rubra with the uterine fundus boggy, 2 cm above the umbilicus, and displaced to the right side. What is the correct sequence of nursing actions?",
-        ["Administer IV methylergonovine first, then call the surgeon", "Massage the boggy fundus until firm, then immediately assist the client to void or catheterize the distended bladder (and roll client to check for blood pooling underneath)", "Pack the vagina tightly with sterile gauze pads", "Place the client in High Fowler's position and recheck in 2 hours"],
-        [1],
-        "STAGE 4 RECOVERY (Every 15 Min × 2 Hrs) = Vitals, Fundus (Massage/Cath), Pads, Roll Underneath!",
-        "• Every 15 minutes perform 4 tasks:\n  1. Vital signs (watch for hypovolemic shock)\n  2. Fundus: Massage if BOGGY; Catheterize if DISPLACED to the right (full bladder prevents uterine contraction!)\n  3. Perineal pads: Saturating a pad in < 15 min = Hemorrhage\n  4. Roll patient to check for blood pooling underneath!",
-        "A boggy uterus must be massaged immediately to stimulate contraction and tamponade bleeding vessels. A fundus displaced above and to the right of the umbilicus indicates bladder distention preventing uterine involution, requiring immediate bladder emptying.",
-        "NCLEX Trap: Never give Methylergonovine (Methergine) if the patient has hypertension/preeclampsia, and never give Carboprost (Hemabate) if the patient has asthma!"],
-
-      ["OB & Peds", "Naegele's Rule, Pregnancy Weight Gain & Positive Signs", "single",
-        "A pregnant client's last menstrual period (LMP) began on October 10. Using Naegele's Rule, what is her Estimated Delivery Date (EDD), and which assessment finding is a POSITIVE (definitive) sign of pregnancy?",
-        ["EDD: July 3; Positive sign: Chadwick's sign (blue cervix) and positive home urine hCG", "EDD: July 17 (LMP + 7 days - 3 months); Positive sign: Auscultation of fetal heart tones via Doppler (at 8–12 weeks) or fetal visualization on ultrasound", "EDD: August 17; Positive sign: Hegar's sign (soft lower uterus) and amenorrhea", "EDD: June 17; Positive sign: Quickening reported by the mother"],
-        [1],
-        "NAEGELE'S RULE (+7 Days, -3 Months) + Positive vs. Probable Signs",
-        "• Naegele's Rule: First day of LMP + 7 days - 3 months = EDD (Oct 10 + 7 days = Oct 17; minus 3 months = July 17)\n• Ideal Weight Gain (~28 lbs total): 1st Trimester = 3 lbs total; 2nd & 3rd Trimesters = 1 lb/week (Quick formula: Weeks minus 9!)\n• POSITIVE Signs (100% Proof of Fetus): Fetal heart tones on Doppler, Fetus on Ultrasound/X-ray, Fetal movement palpated by EXAMINER\n• PROBABLE Signs: Chadwick's (blue cervix), Goodell's (soft cervix), Hegar's (soft lower uterus), Positive hCG test",
-        "Adding 7 days to October 10 gives October 17; subtracting 3 months yields July 17. Only direct evidence of the fetus (fetal heart tones, ultrasound visualization, or examiner-palpated fetal movement) constitutes a Positive sign of pregnancy.",
-        "NCLEX Trap: Positive blood or urine hCG pregnancy tests and Chadwick's/Goodell's/Hegar's signs are PROBABLE signs, NOT Positive signs!"],
-
-      ["OB & Peds", "HELLP Syndrome & Severe Preeclampsia", "single",
-        "A client at 35 weeks gestation with preeclampsia reports right upper quadrant (RUQ) / epigastric pain, nausea, and visual spots. Lab results show platelets 62,000/mm³, AST 240 U/L, ALT 260 U/L, and schistocytes (hemolysis) on peripheral smear. What complication has developed?",
-        ["Acute cholecystitis", "HELLP syndrome", "Gestational diabetes mellitus", "Hyperemesis gravidarum"],
-        [1],
-        "H.E.L.L.P. Syndrome = Severe Complication of Preeclampsia",
-        "• H = Hemolysis (Destruction of RBCs → Anemia & Jaundice)\n• E.L. = Elevated Liver Enzymes (AST/ALT → Causes RUQ / Epigastric pain from liver capsule stretching!)\n• L.P. = Low Platelets (< 100,000/mm³ → Bleeding & DIC risk!)\n• Definitive Cure = Delivery of the fetus + Magnesium Sulfate for seizure prophylaxis",
-        "RUQ/epigastric pain in preeclampsia indicates hepatic subcapsular edema/hemorrhage associated with HELLP syndrome (Hemolysis, Elevated Liver enzymes, Low Platelets).",
-        "NCLEX Trap: Epigastric or RUQ pain, severe headache, hyperreflexia (3+/4+ with clonus), and visual disturbances in a pregnant woman are warning signs of impending eclampsia/HELLP!"],
-
-      ["OB & Peds", "Newborn APGAR Scoring & 3-Vessel Cord (AVA)", "single",
-        "At 1 minute after birth, a newborn has a heart rate of 130 bpm, a strong lusty cry, active motion with flexed extremities, grimaces and coughs vigorously when suctioned, and has a completely pink body with bluish hands and feet (acrocyanosis). What is this newborn's 1-minute APGAR score, and how many vessels should the umbilical cord have?",
-        ["APGAR 7; 2 veins and 1 artery", "APGAR 8; 1 artery and 1 vein", "APGAR 9; 3 vessels (2 arteries and 1 vein: 'AVA')", "APGAR 10; 4 vessels"],
-        [2],
-        "A.P.G.A.R. (Acrocyanosis = 9/10) + Umbilical Cord = A.V.A. (2 Arteries, 1 Vein)",
-        "• A = Appearance: 0 Blue/Pale | 1 Body pink, extremities blue (Acrocyanosis) | 2 Completely pink\n• P = Pulse: 0 Absent | 1 < 100 bpm | 2 > 100 bpm\n• G = Grimace: 0 Flaccid | 1 Grimace | 2 Cry/Cough/Sneeze\n• A = Activity: 0 Limp | 1 Some flexion | 2 Active motion\n• R = Respirations: 0 Absent | 1 Slow/weak | 2 Strong cry\n• Umbilical Cord = A.V.A. (2 Arteries carry deoxygenated blood away; 1 Vein carries oxygenated blood to baby)",
-        "Pulse > 100 (2) + Strong cry (2) + Active motion (2) + Vigorous cough/cry (2) + Body pink with blue extremities/acrocyanosis (1) = 9. A normal umbilical cord contains 2 arteries and 1 vein (AVA).",
-        "Bedside Pearl: If a newborn has only a 2-vessel cord (1 artery, 1 vein), notify the provider and assess for congenital kidney/cardiac anomalies!"],
-
-      ["OB & Peds", "Newborn Substance Exposure & Cold Stress", "single",
-        "The nurse is caring for a newborn whose mother used opioids and methamphetamines during pregnancy. What is the rule for timing of intoxication versus withdrawal in the newborn, and why must cold stress be prevented?",
-        ["Withdrawal occurs in the first 2 hours; cold stress causes hyperglycemia", "First 24 hours of life = Assume INTOXICATION; After 24 hours of life = Assume WITHDRAWAL; Cold stress burns brown fat, causing hypoxia, metabolic acidosis, and hypoglycemia", "Newborns cannot experience withdrawal", "Shivering raises newborn blood glucose"],
-        [1],
-        "Newborn Substance Rule (< 24h Intoxication | > 24h Withdrawal) + Cold Stress Triad",
-        "• Newborn Substance Exposure: First 24 hours of life = Assume INTOXICATION; After 24 hours of life = Assume WITHDRAWAL (high-pitched shrill cry, jitteriness, sneezing, poor feeding → swaddle in quiet dim room!)\n• Cold Stress Triad: Newborns cannot shiver → Burn brown fat → Causes Hypoxia + Metabolic Acidosis + Hypoglycemia!",
-        "During the first 24 hours after birth, maternal drugs are still circulating in the neonate (intoxication); after 24 hours, levels drop and Neonatal Abstinence Syndrome (withdrawal) begins. Cold stress rapidly depletes oxygen and glucose stores.",
-        "NCLEX Trap: Swaddle a withdrawing newborn tightly in a quiet, dimly lit room to minimize CNS stimulation!"],
-
-      ["OB & Peds", "Pathologic Jaundice & Kernicterus (Bilirubin >= 20 mg/dL)", "single",
-        "A newborn has a serum bilirubin level of 21 mg/dL and begins exhibiting lethargy, hypotonia, high-pitched cry, and opisthotonos (severe hyperextended arching of the back and neck). What complication has occurred, and how should the nurse position the newborn?",
-        ["Physiologic jaundice; place supine flat on the back", "Kernicterus (bilirubin encephalopathy from bilirubin >= 20 mg/dL crossing the blood-brain barrier); position the newborn on their SIDE!", "Normal Moro reflex; place prone", "Hypocalcemia; place in Trendelenburg"],
-        [1],
-        "BILIRUBIN Toxicity (>= 20 mg/dL) = Kernicterus & Opisthotonos (Position on SIDE!)",
-        "• Physiologic jaundice appears AFTER 24 h and peaks around day 3–5\n• Jaundice in the first 24h of life is ALWAYS Pathologic!\n• Bilirubin >= 20 mg/dL in newborn = KERNICTERUS (Bilirubin enters brain tissue!)\n• Hallmark Sign: Opisthotonos (severe hyperextended arching of back/neck)\n• Nursing Action: Position newborn on their SIDE (prevents aspiration & pressure on arched spine) and prepare for exchange transfusion/intensive phototherapy!",
-        "Unconjugated bilirubin levels >= 20 mg/dL cross the immature neonatal blood-brain barrier and deposit in the basal ganglia (kernicterus), causing opisthotonos (hyperextended arching), seizures, and permanent brain damage. Position the infant on their side.",
-        "NCLEX Trap: During phototherapy, keep eye shields and diaper ON, turn q2h, and NEVER apply lotions or ointments (causes burns)!"],
-
-      ["OB & Peds", "Congenital Heart Defects: 'TRouBLe' & 'PROVe' Tetralogy of Fallot", "single",
-        "The nurse is caring for four infants with congenital heart defects. Using the 'TRouBLe' rule, which defect shunts unoxygenated blood Right-to-Left (causing cyanosis / 'Blue' baby) and requires placing the infant in the KNEE-CHEST position during a hypercyanotic spell?",
-        ["Ventricular Septal Defect (VSD)", "Atrial Septal Defect (ASD)", "Patent Ductus Arteriosus (PDA)", "Tetralogy of Fallot (or Transposition of the Great Vessels, Truncus Arteriosus, Tricuspid Atresia)"],
-        [3],
-        "Starts with 'T' = TRouBLe (Right-to-Left Cyanotic) + P.R.O.V.E. Tetralogy!",
-        "• Is it TRouBLe? Any congenital heart defect starting with 'T' (Tetralogy of Fallot, Truncus arteriosus, Transposition of great vessels, Tricuspid atresia) = TRouBLe:\n  - Shunts blood Right-to-Left\n  - Child is Blue (Cyanotic)\n  - Requires surgery soon to survive!\n• Non-Trouble (VSD, ASD, PDA) = Left-to-Right (Acyanotic)\n• Tetralogy of Fallot ('P.R.O.V.E.'): Pulmonary stenosis, Right ventricular hypertrophy, Overriding aorta, VSD → Knee-Chest position first for Tet spells!",
-        "Defects starting with the letter 'T' are cyanotic Right-to-Left shunts ('TRouBLe'). During a hypercyanotic 'Tet' spell in Tetralogy of Fallot, placing the infant in the knee-chest position increases systemic vascular resistance, forcing blood into the pulmonary artery to be oxygenated.",
-        "Bedside Pearl: Most congenital heart defects produce a murmur, but some critical ones are silent—newborn pulse-oximetry screening and an echocardiogram confirm the defect."],
-
-      ["OB & Peds", "Coarctation of the Aorta (4-Extremity BP)", "single",
-        "The nurse is assessing a newborn with suspected Coarctation of the Aorta. Which assessment finding is the classic hallmark of this congenital heart defect?",
-        ["A continuous 'machine-like' murmur and widened pulse pressure", "Bounding radial/brachial pulses and high blood pressure in the upper extremities, with weak/absent femoral pulses and cool, pale lower extremities", "Severe cyanosis at birth that worsens when the ductus arteriosus closes", "Equal blood pressures in all four extremities with generalized anasarca"],
-        [1],
-        "COARCTATION of the Aorta = High Upper Extremity BP, Low/Weak Lower Extremities!",
-        "• Narrowing of the aorta near the ductus arteriosus:\n  - BEFORE the narrowing (Head & Arms): High BP, Bounding brachial/radial pulses, Headache/Epistaxis\n  - AFTER the narrowing (Legs & Kidneys): Low BP, Weak or absent femoral/pedal pulses, Cool pale legs",
-        "Coarctation of the aorta obstructs blood flow descending to the lower body while increasing pressure in the aortic arch vessels supplying the head and arms, producing upper-extremity hypertension and lower-extremity hypotension with weak femoral pulses.",
-        "Bedside Pearl: Always compare 4-extremity blood pressures and palpate brachial and femoral pulses simultaneously in newborns."],
-
-      ["OB & Peds", "Kawasaki Disease & IVIG / High-Dose Aspirin", "single",
-        "A 3-year-old child is hospitalized with Kawasaki disease presenting with a 6-day high fever unresponsive to antipyretics, 'strawberry tongue,' bilateral non-purulent conjunctivitis, polymorphous rash, and edematous red hands and feet. What is the primary complication the nurse monitors for, and what is the standard treatment?",
-        ["Rheumatic heart valve stenosis; treat with IM penicillin G", "Coronary artery aneurysms; treat with IV Immune Globulin (IVIG) and Aspirin", "Reye's syndrome; treat with high-dose corticosteroids only", "Renal artery thrombosis; treat with warfarin"],
-        [1],
-        "C.R.A.S.H. & Burn of Kawasaki Disease (Only Time Peds Gets Aspirin!)",
-        "• Burn = High Fever >= 5 days unresponsive to Tylenol/Ibuprofen\n• C = Conjunctivitis (bilateral, no pus)\n• R = Rash (polymorphous)\n• A = Adenopathy (unilateral cervical lymph node)\n• S = Strawberry tongue & cracked red lips\n• H = Hands & Feet red, swollen, then peeling skin\n• Complication: Coronary Artery Aneurysms & MI!\n• Treatment: IVIG + Aspirin (and hold Live Vaccines like MMR/Varicella for 11 months after IVIG!)",
-        "Kawasaki disease is an acute systemic vasculitis that targets the coronary arteries, risking coronary aneurysms. IVIG and aspirin reduce coronary inflammation and thrombosis.",
-        "NCLEX Trap: Kawasaki disease is the ONLY pediatric exception where Aspirin is prescribed (normally avoided in children due to Reye's syndrome). Also delay live vaccines (MMR, Varicella) for 11 months after IVIG!"],
-
-      ["OB & Peds", "Acute Epiglottitis (4 D's - Airway Emergency)", "single",
-        "A 4-year-old unimmunized child arrives at the ED sitting upright, leaning forward with chin thrust out ('tripod position'), drooling profusely, with inspiratory stridor, muffled 'hot potato' voice, and a high fever. Which nursing action is STRICTLY CONTRAINDICATED?",
-        ["Keeping an emergency endotracheal intubation and tracheostomy tray at the bedside", "Inspecting the child's throat with a tongue depressor or obtaining a throat culture", "Allowing the child to sit comfortably in the parent's lap", "Administering blow-by humidified oxygen calmly"],
-        [1],
-        "A.I.R.R. + 4 D's of Epiglottitis (NEVER Put Anything in the Mouth!)",
-        "• Caused by Haemophilus influenzae type b (Hib vaccine prevents it!)\n• 4 D's: Drooling, Dysphagia, Dysphonia (muffled voice, no cough), Distress (inspiratory stridor + Tripod position)\n• NEVER use a tongue blade, throat swab, or oral thermometer → Triggers laryngospasm & total airway occlusion!\n• Keep child calm in parent's lap and prepare for immediate OR intubation!",
-        "Inserting a tongue blade or swab into the mouth or agitating a child with acute epiglottitis can trigger immediate reflex laryngospasm and complete airway obstruction.",
-        "NCLEX Trap: Epiglottitis vs. Croup — Croup has a gradual onset with a 'barking seal-like cough'; Epiglottitis has a sudden onset, NO cough, tripod positioning, and drooling!"],
-
-      ["OB & Peds", "Pyloric Stenosis vs. Intussusception vs. Hirschsprung Disease", "single",
-        "A 5-week-old infant is brought to the clinic for projectile, non-bilious vomiting immediately after feedings. The infant appears constantly hungry, and the nurse palpates a small, firm, 'olive-shaped' mass in the right upper quadrant (epigastrium). Which condition and acid-base imbalance does the nurse suspect?",
-        ["Intussusception; metabolic acidosis", "Hypertrophic pyloric stenosis; hypochloremic, hypokalemic metabolic alkalosis", "Hirschsprung disease; respiratory acidosis", "Celiac disease; respiratory alkalosis"],
-        [1],
-        "3 Classic Pediatric GI Hallmarks (Olive, Sausage/Currant Jelly, Ribbon)",
-        "• Pyloric Stenosis = Palpable 'OLIVE-shaped' RUQ mass + Projectile vomiting + Metabolic Alkalosis (from vomiting stomach acid) + Hungry baby\n• Intussusception = Telescoping bowel → Palpable 'SAUSAGE-shaped' RUQ mass + 'Red Currant Jelly' stools (blood + mucus) + Knees pulled to chest\n• Hirschsprung Disease = No ganglion cells in colon → Failure to pass meconium in 48h + Foul-smelling 'RIBBON-like' stools",
-        "Hypertrophy of the circular pyloric sphincter obstructs gastric emptying, producing a palpable olive-shaped mass in the RUQ and projectile vomiting of stomach acid (hydrochloric acid), which results in Metabolic Alkalosis.",
-        "NCLEX Trap: Prolonged gastric vomiting or continuous NG suction causes METABOLIC ALKALOSIS; diarrhea causes METABOLIC ACIDOSIS!"],
-
-      ["OB & Peds", "Tracheoesophageal Fistula (TEF) / Esophageal Atresia (3 C's)", "single",
-        "During the very first feeding of a 2-hour-old newborn, the infant immediately exhibits the '3 C's': coughing, choking, and cyanosis, along with excessive frothy saliva bubbles from the mouth. What is the nurse's priority action?",
-        ["Switch from breast milk to sterile water and try feeding again", "Make the newborn NPO immediately, elevate the head of the bed 30–45 degrees, suction the oropharynx, and notify the provider", "Place the newborn in Trendelenburg position to drain secretions", "Insert a nasogastric feeding tube blindly into the stomach"],
-        [1],
-        "3 C's of Tracheoesophageal Fistula (TEF) = Coughing, Choking, Cyanosis!",
-        "• Frothy bubbles at mouth + Coughing, Choking, Cyanosis with feeding = Esophageal Atresia / TEF!\n• Priority: NPO IMMEDIATELY (prevent aspiration pneumonia!), keep HOB elevated 30–45°, continuous suction of upper blind pouch, prepare for surgical repair.",
-        "In esophageal atresia with tracheoesophageal fistula, the esophagus ends in a blind pouch or connects directly to the trachea. Keeping the infant strictly NPO with the head elevated prevents gastric reflux and aspiration into the lungs.",
-        "NCLEX Trap: Never attempt to feed a newborn displaying the 3 C's (Coughing, Choking, Cyanosis)!"],
-
-      ["OB & Peds", "Post-Tonsillectomy Hemorrhage Warning Sign", "single",
-        "The nurse is caring for a 7-year-old child 4 hours after a tonsillectomy and adenoidectomy. Which assessment finding is the EARLIEST indicator of postoperative hemorrhage?",
-        ["Frequent swallowing and clearing of the throat while sleeping or awake", "Complaints of a sore throat rated 5/10", "Vomiting small amounts of old, dark brown ('coffee-ground') blood once", "Heart rate of 88 bpm and BP of 104/66 mmHg"],
-        [0],
-        "TONSILLECTOMY = Frequent Swallowing = Trickling Blood!",
-        "• #1 Early Sign of Post-Tonsillectomy Bleeding = Frequent swallowing, throat clearing, restlessness, tachycardia\n• Bleeding risk peaks in First 24 Hours AND Days 5–10 post-op (when surgical scabs/eschar slough off!)\n• Post-Op Care: Clear cool liquids (NO red/purple/brown liquids that look like blood, NO milk/ice cream that coats throat, NO straws, NO coughing/nose blowing!)",
-        "Frequent swallowing in a post-tonsillectomy child indicates blood is trickling down the posterior pharynx into the stomach. Inspect the posterior pharynx with a light immediately and notify the surgeon.",
-        "NCLEX Trap: Never give a child a straw, red popsicles/juice, or citrus juice after a tonsillectomy!"],
-
-      ["OB & Peds", "Cystic Fibrosis Management (Pancreatic Enzymes)", "single",
-        "The nurse is teaching the parents of a child with Cystic Fibrosis (CF) who has bulky, frothy, foul-smelling, fatty stools (steatorrhea). How should the nurse instruct the parents to administer pancreatic enzyme replacements (pancrelipase)?",
-        ["Give the enzymes once daily at bedtime on an empty stomach", "Administer the capsules (or open and sprinkle the enteric-coated beads onto a spoonful of applesauce) immediately before EVERY meal and snack", "Mix the enzyme powder into a full bottle of warm formula or hot soup", "Discontinue the enzymes whenever the child's stools become formed"],
-        [1],
-        "CYSTIC FIBROSIS = Thick Mucus in Lungs + Pancreas + Salty Sweat (> 60 mEq/L)",
-        "• Diagnosis: Sweat Chloride Test > 60 mEq/L ('Salty taste when kissing baby')\n• GI Care: Give Pancreatic Enzymes (Pancrelipase) WITH EVERY MEAL & SNACK! (Can open capsule onto cool acidic food like applesauce; NEVER crush/chew beads or mix in hot/protein food)\n• Diet: High-Calorie, High-Protein, High-Fat + Fat-soluble vitamins (A, D, E, K)\n• Lung Care: Chest Physiotherapy (CPT) BEFORE meals or > 1–2 hrs after meals (to prevent vomiting!)",
-        "In cystic fibrosis, thick mucus blocks pancreatic ducts, preventing digestive enzymes from reaching the duodenum. Pancreatic enzymes must be taken with every meal and snack so fats and proteins can be absorbed.",
-        "NCLEX Trap: Perform chest physiotherapy (vest/percussion) BEFORE meals—doing it right after eating triggers vomiting!"],
-
-      ["OB & Peds", "Celiac Disease Gluten-Free Diet (BROW)", "single",
-        "The nurse is helping the parents of a child newly diagnosed with Celiac disease select safe meal options. Which lunch selection is safe for this child?",
-        ["Whole-wheat pasta with marinara sauce", "Rye bread turkey sandwich with barley soup", "Grilled chicken breast with steamed white rice, corn tortillas, and fresh fruit", "Breaded chicken nuggets with graham crackers"],
-        [2],
-        "CELIAC Disease = Avoid B.R.O.W. | Safe = Rice, Corn, Quinoa, Potatoes!",
-        "• Avoid Gluten in B.R.O.W.:\n  - B = Barley\n  - R = Rye\n  - O = Oats (unless certified gluten-free due to cross-contamination)\n  - W = Wheat (including Graham, Spelt, Semolina, Durum, Couscous)\n• SAFE Grains: Rice, Corn, Millet, Buckwheat, Quinoa, Soy, Potatoes",
-        "Celiac disease is an autoimmune enteropathy triggered by gluten found in wheat, barley, and rye (and cross-contaminated oats). Rice, corn, and potatoes are naturally gluten-free.",
-        "Bedside Pearl: Teach parents to read labels carefully on hidden gluten sources like soy sauce, salad dressings, cold cuts, and soups."],
-
-      ["OB & Peds", "Acute Glomerulonephritis vs. Nephrotic Syndrome", "single",
-        "A 6-year-old child who had a group A beta-hemolytic streptococcal throat infection (strep throat) 2 weeks ago presents with cola/tea-colored urine (hematuria), periorbital edema, oliguria, and hypertension (BP 136/90 mmHg). Which lab test confirms the antecedent trigger for this condition?",
-        ["Positive Sweat Chloride test", "Elevated Antistreptolysin O (ASO) titer", "Decreased Hemoglobin A1c", "Positive Western Blot test"],
-        [1],
-        "GLOMERULONEPHRITIS (Cola Urine + HTN + ASO) vs. NEPHROTIC (Massive Proteinuria + Anasarca)",
-        "• Acute Post-Streptococcal Glomerulonephritis (APSGN): Happens 10–14 days after Strep Throat or Impetigo → Tea/Cola hematuria, Mild periorbital edema, Hypertension, Elevated ASO titer\n• Nephrotic Syndrome: Basement membrane leaks huge amounts of protein → Massive Proteinuria (4+ frothy urine), Severe Hypoalbuminemia, Generalized Anasarca edema, Hyperlipidemia (Normal BP)",
-        "Acute post-streptococcal glomerulonephritis (APSGN) is an immune-complex reaction occurring 1 to 2 weeks after a group A strep infection, confirmed by an elevated Antistreptolysin O (ASO) titer.",
-        "NCLEX Trap: Glomerulonephritis = Hematuria (cola urine) + Hypertension; Nephrotic Syndrome = Massive 4+ Proteinuria + Hypoalbuminemia + Generalized Edema!"],
-
-      ["OB & Peds", "Spina Bifida (Myelomeningocele) Pre-Op & Latex Precaution", "sata",
-        "The nurse is caring for a newborn born with a lumbar myelomeningocele awaiting surgical closure. Which interventions must be included in the plan of care? (Select all that apply.)",
-        ["Position the newborn in the prone position (on the abdomen) with hips slightly flexed and legs abducted", "Cover the myelomeningocele sac with a sterile, moist, warm 0.9% Normal Saline dressing", "Place the newborn supine on their back with a tight diaper secured over the sac", "Institute a strict latex-free environment", "Measure head circumference daily and assess the anterior fontanel for bulging (hydrocephalus)"],
-        [0, 1, 3, 4],
-        "MYELOMENINGOCELE = Prone Position + Sterile Saline Dressing + LATEX Allergy!",
-        "• Pre-Op: Prone position (on belly) so sac doesn't rupture!\n• Cover sac with sterile, warm, moist Normal Saline gauze (prevent drying/meningitis)\n• Strict LATEX-FREE precautions (Children with Spina Bifida have a 50–70% incidence of severe Latex Allergy → also watch for banana, avocado, kiwi, chestnut allergy!)\n• Monitor for Hydrocephalus (bulging fontanel, increasing head circumference)",
-        "To prevent sac rupture and bacterial meningitis prior to surgical closure, the newborn is kept prone with the sac covered by a sterile moist saline dressing. Latex precautions and hydrocephalus monitoring are lifelong priorities.",
-        "NCLEX Trap: Patients with Spina Bifida or frequent catheterizations have high rates of Latex allergy—also cross-reactive with bananas, avocados, kiwis, and chestnuts!"],
-
-      ["OB & Peds", "Developmental Hip Dysplasia (Pavlik Harness & Ortolani/Barlow)", "single",
-        "A 2-month-old infant with developmental dysplasia of the hip (DDH) is fitted with a Pavlik harness. Which statement by the parent indicates a need for further teaching?",
-        ["'I will check my baby's skin under the straps several times a day for redness.'", "'I will put a thin cotton undershirt on my baby underneath the harness straps.'", "'I will unbuckle and readjust the straps every time I change my baby's diaper.'", "'I will gently massage the skin around the harness and avoid using lotions or powders under the straps.'"],
-        [2],
-        "PAVLIK HARNESS = Keep Hips Flexed/Abducted & Don't Adjust Straps!",
-        "• Signs of DDH: Asymmetric gluteal/thigh skin folds, shortened limb (Galeazzi sign), positive Ortolani/Barlow click\n• Pavlik Harness Rules:\n  - Wear 23–24 hours/day (unless provider specifies removal for bathing)\n  - Put diaper AND thin cotton shirt UNDER the straps\n  - NEVER adjust the strap buckles (provider sets exact hip flexion/abduction angle!)",
-        "Parents should never unbuckle or alter the strap length of a Pavlik harness because the straps are calibrated by the orthopedic provider to maintain the femoral head inside the acetabulum. The diaper is changed underneath the harness.",
-        "NCLEX Trap: Asymmetric gluteal folds in an infant and a 'clunk' on hip abduction (Ortolani sign) are classic screening signs of hip dysplasia."],
-
-      ["OB & Peds", "Lead Poisoning (Plumbism) & Chelation Therapy", "single",
-        "A 2-year-old toddler living in a house built in 1955 has a venous blood lead level (BLL) of 48 mcg/dL. Which intervention should the nurse anticipate, and what diet helps reduce lead absorption?",
-        ["Administer chelation therapy with succimer (Chemet) or calcium disodium EDTA, and encourage a diet rich in calcium, iron, and vitamin C", "Induce vomiting with syrup of ipecac and restrict all dairy products", "Observe only and repeat lead screening in 2 years", "Provide a high-fat diet to bind lead in the stomach"],
-        [0],
-        "LEAD Poisoning (< 1978 Paint) = High Calcium & Iron Diet + Chelation (>= 45 mcg/dL)",
-        "• No safe blood lead level exists (>= 3.5–5 mcg/dL requires home environmental investigation)\n• BLL >= 45 mcg/dL = Chelation Therapy (Succimer PO or Calcium Disodium EDTA + Dimercaprol IM)\n• Nutrition: Iron & Calcium compete with lead for absorption! (Low Iron/Calcium = Body absorbs MORE lead!)",
-        "A blood lead level >= 45 mcg/dL requires pharmacologic chelation therapy to bind lead for urinary excretion, alongside environmental abatement and a diet rich in iron and calcium (which block GI lead absorption).",
-        "Bedside Pearl: Instruct families in older homes to run cold tap water for 1–2 minutes before use and wet-mop window sills rather than dry sweeping lead dust."],
-
-      ["OB & Peds", "Ventriculoperitoneal (VP) Shunt Malfunction / Infection", "single",
-        "The nurse is assessing two pediatric clients with ventriculoperitoneal (VP) shunts for hydrocephalus: a 4-month-old infant and a 9-year-old school-age child. Which findings indicate acute VP shunt malfunction (increased ICP) in each age group?",
-        ["Infant: Sunken fontanel and quiet sleeping | Child: Polyuria and weight loss", "Infant: Bulging tense anterior fontanel, high-pitched shrill cry, and 'sunset eyes' | Child: Morning headache, projectile vomiting, lethargy, and declining school performance", "Infant: Bradycardia and low-pitched cry | Child: Diarrhea and hyperactivity", "Infant: Decreased head circumference | Child: Increased appetite"],
-        [1],
-        "EARLY ICP in Infants (Open Sutures) vs. Older Children (Closed Skull)",
-        "• Infant (Fontanels Open): Bulging tense fontanel, Separated cranial sutures, Increasing head circumference, High-pitched 'cat-like' shrill cry, 'Sunsetting' eyes (sclera visible above iris), Irritability\n• Child (Fontanels Closed): Morning headache, Projectile vomiting (often without nausea), Diplopia, Lethargy, Behavioral/school decline",
-        "In infants with open fontanels, increased ICP manifests as a bulging fontanel, high-pitched cry, and sunsetting eyes. In older children with fused skull sutures, increased ICP causes headache, projectile vomiting, and behavioral/cognitive changes.",
-        "NCLEX Trap: Fever + redness/tenderness along the shunt tract within 1–2 months of surgery indicates VP shunt INFECTION—notify the neurosurgeon immediately!"],
-
-      ["OB & Peds", "Pediatric Developmental Milestones ('NORMAL, OLDER, EASIER')", "single",
-        "A pediatric nurse is evaluating four children during well-child visits. Which developmental finding should the nurse report to the healthcare provider as a developmental DELAY?",
-        ["A 6-month-old infant who rolls from back to front and sits with minimal support", "A 9-month-old infant who uses a crude pincer grasp and displays stranger anxiety", "An 18-month-old toddler who cannot sit unsupported or walk independently", "A 3-year-old preschooler who rides a tricycle and speaks in 3- to 4-word sentences"],
-        [2],
-        "RAPID Peds Milestones + Exam Rule: 'NORMAL, OLDER, EASIER'",
-        "• 2 mo: Social smile, Posterior fontanel closes (2–3 mo)\n• 6 mo: Rolls over, Doubles birth weight\n• 8–9 mo: Sits unsupported (8 mo), Stranger anxiety, Pincer grasp\n• 12 mo: Walks with 1 hand held / first steps, Triples birth weight, Anterior fontanel closes at 12–18 mo\n• 2 yr: Walks stairs, 2-word phrases, Parallel play\n• 3 yr: Tricycle (3 wheels = 3 years), 3-word sentences\n• Exam Guessing Rule: Chant 'NORMAL, OLDER, EASIER' when in doubt!",
-        "Infants should sit unsupported by 8–9 months and walk independently by 12–15 months. An 18-month-old who cannot sit unsupported or walk exhibits a significant gross motor delay.",
-        "NCLEX Trap: Posterior fontanel closes at 2 months (8 weeks); Anterior fontanel closes at 12 to 18 months!"],
-
-      // ==================== CATEGORY 4: PRIORITIZATION, DELEGATION & FUNDAMENTALS (25 QUESTIONS) ====================
-      ["Prioritization & Fundamentals", "RN vs. LPN vs. UAP Scope of Delegation (EAT)", "single",
-        "The charge nurse on a medical-surgical unit is making assignments for a Registered Nurse (RN), a Licensed Practical Nurse (LPN), and an Unlicensed Assistive Personnel (UAP). Which task is appropriate to delegate to the LPN?",
-        ["Performing the initial admission assessment and care plan for a newly admitted client with heart failure", "Administering an oral antihypertensive and performing a sterile dressing change for a stable client 3 days post-appendectomy", "Providing discharge teaching on insulin self-administration to a newly diagnosed diabetic client", "Starting an IV line and hanging a packed red blood cell transfusion"],
-        [1],
-        "Never Delegate to LPN/UAP Rules (RN = E.A.T. + IVs + Blood + Unstable)",
-        "• Never Delegate to LPN: Starting IVs, hanging/mixing IV meds, IV push meds, central lines, blood transfusions, initial care planning, initial teaching, unstable patients, or FIRST assessment after a change\n• LPN Scope: Stable patients → PO/IM/SubQ meds, Sterile dressing changes, Trach suctioning, Foley insertion, Reinforcing RN teaching\n• Never Delegate to UAP: Assessments (except routine vitals & Accu-Cheks), meds (except OTC barrier creams), treatments (except enemas), or family safety duties!",
-        "LPNs can care for stable clients with predictable outcomes, administer routine PO/IM/SubQ medications, and perform sterile procedures such as wound care or Foley catheterization. Starting IVs, IV push meds, blood transfusions, initial assessments, and initial teaching belong exclusively to the RN.",
-        "NCLEX Trap: NEVER delegate patient safety duties (like raising bed rails or checking restraints) to family members!"],
-
-      ["Prioritization & Fundamentals", "The 4 Non-Negotiable Prioritization Rules", "single",
-        "After receiving change-of-shift report on four clients, which client should the nurse assess FIRST?",
-        ["A client with chronic COPD who has a barrel chest and an SpO2 of 90% on 2 L/min nasal cannula", "A client 6 hours post-thyroidectomy (fresh post-op < 12h) who reports a new feeling of fullness at the incision site and has audible high-pitched inspiratory stridor", "A client with chronic heart failure who has 2+ bilateral ankle edema and is requesting a bedpan", "A client 3 days post-appendectomy with an oral temperature of 99.8°F (37.6°C)"],
-        [1],
-        "The 4 Non-Negotiable Prioritization Rules + Tie-Breaker Organs",
-        "• Rule 1: ACUTE beats CHRONIC\n• Rule 2: FRESH POST-OP (< 12 hours) beats medical or older surgical patients\n• Rule 3: UNSTABLE beats STABLE (Unexpected signs = Unstable; Expected disease signs = Stable)\n• 4 Always-Unstable Conditions: (1) Active Hemorrhage, (2) Temp > 105°F (seizures), (3) Hypoglycemia (< 70 mg/dL), (4) Pulselessness/Apnea\n• Rule 4 (Tie-Breaker Vital Organs): Brain > Lung > Heart > Liver > Kidney > Pancreas",
-        "A client 6 hours post-thyroidectomy is a fresh post-op (< 12 hours) exhibiting unexpected acute airway compromise (neck fullness from hemorrhage/hematoma + inspiratory stridor).",
-        "NCLEX Trap: Never pick a patient with expected textbook signs of a chronic illness (like COPD with SpO2 90% or CHF with ankle edema) over a fresh post-op or unstable patient!"],
-
-      ["Prioritization & Fundamentals", "Mass Casualty Disaster Triage (Color Tagging)", "single",
-        "Following a train derailment mass casualty incident, the triage nurse is assigning disaster tags. Which victim should be assigned a RED tag (Immediate / Priority 1)?",
-        ["A victim with an open femur fracture and radial pulse of 96 bpm who is crying for help", "A victim with asymmetrical chest movement, severe dyspnea, tracheal deviation, and RR 36/min (tension pneumothorax)", "A victim with full-thickness burns over 95% TBSA, agonal respirations, and fixed dilated pupils", "A victim with a sprained wrist and facial abrasions who is walking around the scene"],
-        [1],
-        "DISASTER TRIAGE Tags = Red (Immediate), Yellow (Delayed), Green (Walking), Black (Expectant)",
-        "• RED (Immediate - Priority 1): Immediate ABC life threat that CAN survive with quick intervention (Airway obstruction, Tension pneumothorax, Uncontrolled hemorrhage, Shock)\n• YELLOW (Delayed - Priority 2): Serious injuries (Open fractures, abdominal injury without shock) that can wait 30–60 minutes\n• GREEN (Minor - Priority 3): 'Walking wounded' (Sprains, minor lacerations)\n• BLACK (Expectant - Priority 4): Pulseless/apneic or unsalvageable injuries (> 85% burns, massive head trauma)",
-        "In mass casualty triage, resources are directed to save the greatest number of lives. A victim with tension pneumothorax has an immediate airway/breathing threat that is rapidly reversible with needle decompression (Red Tag).",
-        "NCLEX Trap: Unlike normal ED triage, in a Mass Casualty Disaster, a pulseless or agonal patient receives a BLACK tag so you can save Red-tagged survivors!"],
-
-      ["Prioritization & Fundamentals", "Mechanical Ventilator Alarms Decoded (High vs. Low Pressure)", "single",
-        "The high-pressure alarm sounds on a client's mechanical ventilator. In what exact priority order should the nurse troubleshoot and resolve a High-Pressure (blockage/obstruction) alarm?",
-        ["Suction the endotracheal tube immediately first, then check the tubing", "(1) Unkink the tubing, (2) Empty dependent water condensation from the circuit, (3) Reposition the client / turn, cough, and deep breathe, and (4) Suction only as a last resort!", "Disconnect the ventilator and leave the room to call Respiratory Therapy", "Wean the client off the ventilator immediately"],
-        [1],
-        "VENTILATOR ALARMS: High-Pressure (4 Steps) vs. Low-Pressure (Disconnection)",
-        "• High-Pressure Alarm = Blockage / Increased Airway Resistance → Fix in this exact order:\n  1. Unkink tubing\n  2. Empty water condensation out of tubing\n  3. Turn, reposition, or ask patient to cough/deep breathe\n  4. Suction ONLY as a last resort!\n• Low-Pressure Alarm = Disconnection → Reconnect tubing/O2 sensor wire immediately (if tubing fell on floor, manually bag with Ambu-bag & call RT!)",
-        "High-pressure alarms are triggered when the ventilator must push against increased resistance. Because endotracheal suctioning causes hypoxia and mucosal trauma, always check for kinked tubing, water condensation, and positioning first before suctioning.",
-        "NCLEX Trap: Never wean a patient off a ventilator if morning ABGs show Respiratory Acidosis—it means their respiratory drive is inadequate and they cannot ventilate themselves yet!"],
-
-      ["Prioritization & Fundamentals", "Staff Management: 3-Step Decision Matrix", "single",
-        "The charge nurse observes a fellow RN preparing to perform a sterile central line dressing change without wearing sterile gloves, and later overhears a UAP using rude, unprofessional language during shift report (with no patient in immediate danger). Using the 3-Step Staff Management Matrix, how should the charge nurse handle each situation?",
-        ["Ignore both situations to maintain unit harmony", "Report both staff members immediately to the State Board of Nursing", "For the sterile contamination (immediate physical harm): Immediately CONFRONT the RN and take over the task; For the rude language (inappropriate, not illegal, no immediate harm): TALK to the UAP LATER in private", "Talk to the RN next week; fire the UAP on the spot"],
-        [2],
-        "STAFF MANAGEMENT 3-Step Decision Matrix (Never Ignore!)",
-        "• Step 1: Is it ILLEGAL (e.g., narcotic diversion, theft, abuse)? → Immediately notify the SUPERVISOR!\n• Step 2: Is anyone in IMMEDIATE PHYSICAL or PSYCHOLOGICAL HARM (e.g., breaking sterile field, peri-care without gloves)? → Immediately CONFRONT the staff member and take over the task!\n• Step 3: Is it simply INAPPROPRIATE (not illegal, no immediate harm, e.g., rude language at report)? → TALK TO THEM LATER in private!\n• Golden Rule: NEVER ignore inappropriate staff behavior!",
-        "Breaking sterile technique on a central line poses immediate physical harm (sepsis) to the client, requiring immediate intervention at the moment. Unprofessional language without immediate client harm is addressed privately after the report concludes.",
-        "NCLEX Trap: If narcotics are missing or a nurse smells like alcohol (Illegal/Impaired), do NOT confront them privately—immediately notify the Nursing Supervisor!"],
-
-      ["Prioritization & Fundamentals", "Acid-Base Balance: Rule of the B's, The Patient Rule & MAC Kussmaul", "single",
-        "A client with prolonged severe diarrhea has the following Arterial Blood Gas (ABG): pH 7.22, PaCO2 38 mmHg, HCO3- 14 mEq/L. Using the Rule of the B's and the Patient Rule, what is this acid-base imbalance, what clinical signs will the client exhibit, and what breathing pattern is unique to this state?",
-        ["Metabolic Alkalosis; tachycardia, hyperreflexia, and hypokalemia", "Metabolic Acidosis; bradycardia, lethargy, hyporeflexia (0/1+), paralytic ileus, HYPERkalemia, and Kussmaul respirations ('MAC Kussmaul')", "Respiratory Acidosis; hyperventilation and hypokalemia", "Respiratory Alkalosis; Kussmaul breathing"],
-        [1],
-        "Rule of the B's + The Patient Rule ('As pH Goes, So Goes my Patient — Except K+!')",
-        "• Rule of the B's: pH (7.22 ↓) and Bicarb (14 ↓) go in the SAME direction = METABOLIC Acidosis!\n• The Patient Rule: As pH goes, SO GOES YOUR PATIENT — EXCEPT Potassium (K+)!\n  - High pH (Alkalosis > 7.45): Everything goes UP & Excitable (Tachycardia, hyperreflexia 3+/4+, seizures → keep Suction at bedside), EXCEPT K+ goes DOWN!\n  - Low pH (Acidosis < 7.35): Everything SHUTS DOWN (Bradycardia, lethargy, hyporeflexia, coma → keep Ambu-bag at bedside), EXCEPT K+ goes UP (Hyperkalemia)!\n• 'MAC Kussmaul': Metabolic Acidosis is the ONLY ABG that produces Kussmaul (deep, rapid) respirations!",
-        "Because pH and HCO3- both decreased together, the imbalance is Metabolic Acidosis (caused by losing intestinal bicarbonate in diarrhea). In acidosis, CNS and neuromuscular function shut down (lethargy, hyporeflexia), potassium shifts out of cells causing hyperkalemia, and the lungs compensate via Kussmaul respirations.",
-        "NCLEX Trap: Over-ventilating = Respiratory Alkalosis; Under-ventilating = Respiratory Acidosis; Prolonged vomiting/NG suction = Metabolic Alkalosis; Everything else (DKA, diarrhea, renal failure) = Metabolic Acidosis!"],
-
-      ["Prioritization & Fundamentals", "Crutches, Canes & Walkers Mastery", "single",
-        "The nurse is fitting a client for axillary crutches and teaching stair navigation and cane use. Which fitting and ambulation rules are correct?",
-        ["Rest body weight tightly on the axillary pads; go up stairs with the bad leg first", "Fit crutches 2 to 3 finger-widths below the anterior axillary fold with elbows flexed 30 degrees; step UP stairs with the GOOD (strong) leg first, and move crutches DOWN stairs together with the BAD (weak) leg; hold a cane on the STRONGER (unaffected) side", "Hold the cane on the weak side and hang a heavy backpack on the front bar of a walker", "Use a 2-point gait for a complete non-weight-bearing leg fracture"],
-        [1],
-        "CRUTCHES (2–3 Fingers Below Axilla, 30° Elbow) + 'UP with the Good, DOWN with the Bad'",
-        "• Crutch Fit: 2–3 finger-widths below anterior axillary fold; elbows flexed 30° (Never rest weight on axilla → prevents radial/brachial nerve palsy!)\n• Gaits: 2-Point (mild bilateral weakness), 3-Point (1 leg non-weight bearing), 4-Point (severe bilateral weakness), Swing-Through (amputee/paraplegia)\n• Stairs: UP with the GOOD leg first; DOWN with the BAD leg + Crutches together!\n• Cane: Hold on STRONGER (unaffected) side, move forward with weaker leg",
-        "Leaving 2–3 finger-widths below the axilla prevents compression of the radial nerve (crutch palsy). Crutches always move together with the injured ('bad') leg on stairs, and a cane is always held in the hand opposite the weak leg.",
-        "NCLEX Trap: For walkers, push the walker forward first, then step into it—and never hang heavy bags on the front bar (causes tipping)!"],
-
-      ["Prioritization & Fundamentals", "Substance Abuse: 'Upper vs. Downer' Shortcut & Wernicke-Korsakoff", "single",
-        "A client with chronic alcohol use disorder is admitted with severe amnesia and confabulation (making up detailed plausible stories), and 72 hours after their last drink develops Delirium Tremens (DTs) with severe agitation and hypertension. Which vitamin deficiency caused the confabulation, how should the nurse respond to the stories, and what are the room/diet orders for DTs?",
-        ["Vitamin B12 deficiency; confront the client's lies and place in a semi-private room on a regular diet", "Vitamin B1 (Thiamine) deficiency (Wernicke-Korsakoff syndrome); never confront confabulation—redirect to realistic tasks; for Delirium Tremens (starts at 72h): place in a private room near the nurses' station, NPO/clear liquids (aspiration/seizure risk), strict bed rest, tranquilizers, and Vitamin B1", "Vitamin C deficiency; encourage ambulation in the hallway", "Iron deficiency; no restraints or monitoring needed"],
-        [1],
-        "Wernicke-Korsakoff (B1/Thiamine) + AWS (24h) vs. Delirium Tremens (72h Emergency!)",
-        "• Wernicke-Korsakoff = Vitamin B1 (Thiamine) deficiency → Amnesia + Confabulation → Do NOT confront stories; REDIRECT to realistic tasks!\n• AWS (< 24h) = Non-life-threatening, semi-private room, up ad lib, regular diet\n• Delirium Tremens (Starts ~72h) = MEDICAL EMERGENCY → Private room near nurse station, NPO/clear liquids (seizure/aspiration risk), strict bed rest, restraints if needed, antihypertensives + tranquilizers + Thiamine!\n• 5 Official Uppers: Caffeine, Cocaine, PCP/LSD, Methamphetamines, Adderall (Everything else is a Downer!)",
-        "Wernicke-Korsakoff encephalopathy is caused by Thiamine (B1) deficiency and requires redirection rather than confrontation. Delirium Tremens peaks around 72 hours after the last drink and is a fatal medical emergency (Downer withdrawal = hyper-excited seizure state requiring bedside suction and NPO/clear liquids).",
-        "NCLEX Trap: Confront denial in substance abuse using objective 'I' statements, but SUPPORT denial during the initial stages of grief and loss (DABDA)!"],
-
-      ["Prioritization & Fundamentals", "Central Venous Catheter (CVC) Air Embolism Position", "single",
-        "While changing the cap on a client's subclavian central venous catheter (CVC), the tubing accidentally disconnects and the client suddenly develops dyspnea, chest pain, tachycardia, hypotension, and a 'mill-wheel' churning cardiac murmur. What is the nurse's FIRST action?",
-        ["Place the client in High Fowler's position and encourage deep breathing", "Clamp the catheter immediately, place the client in Left Lateral Trendelenburg position (left side with head down), and administer 100% oxygen", "Place the client on the right side with the head elevated 45 degrees", "Flush the central line with 20 mL of normal saline"],
-        [1],
-        "VENOUS AIR EMBOLISM = Clamp + LEFT Lateral Trendelenburg (Durant's Position) + 100% O2!",
-        "• Why Left Side + Head Down (Trendelenburg)?\n  - Traps the air bubble in the apex of the Right Atrium / Right Ventricle so it floats UP away from the pulmonary artery outflow tract and cannot enter the lungs!\n• Prevention during CVC insertion/removal: Instruct client to perform Valsalva maneuver (bear down / hold breath) or hum while catheter hub is open!",
-        "Clamping the catheter stops further air entry, and positioning the client on the left side in Trendelenburg traps the air embolus in the right heart chambers, preventing it from obstructing the pulmonary artery.",
-        "NCLEX Trap: Left Lateral Trendelenburg is ONLY for Venous Air Embolism!"],
-
-      ["Prioritization & Fundamentals", "Total Parenteral Nutrition (TPN) Safety Rules", "single",
-        "A client's Total Parenteral Nutrition (TPN) bag is nearly empty, and the pharmacy informs the nurse that the new TPN bag will be delayed by 45 minutes. Which IV fluid must the nurse hang immediately to prevent a life-threatening complication?",
-        ["0.9% Normal Saline at 100 mL/hr", "10% Dextrose in Water (D10W) or 20% Dextrose in Water at the same infusion rate as the TPN", "Lactated Ringer's at 50 mL/hr", "0.45% Half-Normal Saline"],
-        [1],
-        "TPN Rules = Dedicated Central Line, Filter, Change q24h, Hang D10W if Bag Runs Out!",
-        "• TPN has high glucose → Pancreas secretes high endogenous insulin\n• If TPN stops abruptly → Massive REBOUND HYPOGLYCEMIA!\n• Emergency Action if next TPN bag is late: Hang 10% Dextrose in Water (D10W) at the exact same rate!\n• Infection Control: Change TPN bag AND IV tubing every 24 hours; check fingerstick blood glucose every 4–6 hours.",
-        "Because the client's pancreas is secreting high levels of insulin in response to the hypertonic glucose in TPN, abruptly stopping TPN without replacing it with D10W causes severe rebound hypoglycemia.",
-        "NCLEX Trap: Never speed up a TPN infusion to 'catch up' if it falls behind—doing so causes Hyperosmolar Hyperglycemic State (HHS)!"],
-
-      ["Prioritization & Fundamentals", "Tracheostomy Suctioning & Accidental Decannulation", "single",
-        "The nurse is performing open sterile endotracheal suctioning for a client with a tracheostomy. Which technique is correct to prevent hypoxia and mucosal trauma?",
-        ["Pre-oxygenate with 100% O2, insert the catheter without suction, and apply intermittent suction for no more than 10 to 15 seconds while rotating and withdrawing the catheter", "Apply continuous suction while inserting the catheter and suction for 30 seconds continuously", "Instill 10 mL of normal saline directly into the tracheostomy tube before every suction pass", "Perform suctioning strictly every hour on the clock regardless of lung sounds"],
-        [0],
-        "SUCTIONING Rules = 100% O2 First, No Suction Going In, <= 10–15 Sec Going Out!",
-        "• 1. Hyperoxygenate with 100% O2 for 30–60 seconds BEFORE and AFTER each pass\n• 2. Insert catheter WITHOUT suction until resistance is met, then pull back 1 cm\n• 3. Apply INTERMITTENT suction while rotating catheter on withdrawal for <= 10–15 seconds\n• Keep Obturator + Spare Trach (same size & 1 size smaller) at the bedside!",
-        "Suctioning removes oxygen along with secretions. Pre-oxygenating with 100% O2, applying suction only during withdrawal, and limiting each pass to 10–15 seconds prevents hypoxemia, vagal bradycardia, and tracheal mucosal damage.",
-        "NCLEX Trap: Never instill normal saline into a tracheostomy tube before suctioning—it causes hypoxia and washes bacteria deeper into the lungs!"],
-
-      ["Prioritization & Fundamentals", "Restraint Safety & Legal Requirements", "sata",
-        "A confused client in the ICU repeatedly attempts to pull out their endotracheal tube, and soft wrist restraints are applied after alternative non-violent de-escalation measures fail. Which actions are required when caring for a client in physical restraints? (Select all that apply.)",
-        ["Secure the restraint ties to the movable side rails of the bed using a double square knot", "Tie the restraint to the non-movable bed frame using a quick-release (slip) knot", "Assess skin integrity, distal neurovascular status (circulation/pulses), and offer fluids/toileting/range-of-motion every 1–2 hours", "Ensure two fingers can fit comfortably between the wrist restraint and the client's skin", "Use a PRN (as-needed) standing restraint order written by the physician"],
-        [1, 2, 3],
-        "RESTRAINTS = Frame (NEVER Side Rail), Quick-Release Knot, 2 Fingers, No PRN Orders!",
-        "• Tie to the MOVABLE BED FRAME (NEVER to the side rails—lowering rail injures patient's arm!)\n• Use a QUICK-RELEASE knot so it can be untied in 1 second during an emergency/seizure\n• Leave 2-finger width space between cuff and wrist\n• Check circulation/skin/ROM/toileting every 1–2 hours\n• Physician orders can NEVER be written as PRN (as needed) for restraints!",
-        "Restraints must be secured to the bed frame with a quick-release knot, allow 2 fingers of space for circulation, and have neurovascular checks and basic needs met every 1–2 hours. PRN restraint orders are illegal.",
-        "NCLEX Trap: In an acute emergency where a client is actively harming themselves or staff, an RN can apply restraints FIRST to ensure safety, then obtain a provider's face-to-face evaluation and order within 1 hour!"],
-
-      ["Prioritization & Fundamentals", "Seizure Precautions & Active Tonic-Clonic Seizure Care", "single",
-        "While walking in the hallway, a client suddenly cries out, loses consciousness, and begins having a generalized tonic-clonic seizure. What should the nurse do FIRST?",
-        ["Insert a padded tongue blade or oral airway between the client's teeth to prevent tongue biting", "Ease the client safely to the floor, turn them onto their side, protect the head with a pillow/lap, and loosen restrictive neck clothing", "Hold the client's arms and legs down firmly to prevent musculoskeletal fractures", "Carry the client back to bed immediately"],
-        [1],
-        "SEIZURE Priority = Side-Lying Position, Protect Head, Time It, NOTHING in Mouth!",
-        "• During Active Seizure:\n  1. Lower to floor/bed safely & turn to SIDE (prevents aspiration of saliva/vomit!)\n  2. Cushion the head & move surrounding furniture away\n  3. Loosen tight collar/clothing & note exact start time + eye/limb movements\n  4. NEVER restrain limbs and NEVER force anything into the mouth!\n• Status Epilepticus (> 5 minutes): Give IV Lorazepam (Ativan) or Diazepam STAT!",
-        "Turning the client onto their side maintains a patent airway and allows secretions to drain, while cushioning the head prevents cranial trauma.",
-        "NCLEX Trap: Never insert a padded tongue blade, spoon, or fingers into the mouth of a seizing patient—it breaks teeth and causes airway obstruction!"],
-
-      ["Prioritization & Fundamentals", "Hospital Fire Safety (RACE & PASS)", "single",
-        "The nurse enters a client's room and sees smoke and flames coming from a malfunctioning IV infusion pump next to a bedridden client receiving supplemental oxygen. What is the nurse's FIRST action?",
-        ["Grab the ABC fire extinguisher and spray the base of the IV pump", "Remove the client from the room to safety (turning off the wall oxygen valve on the way out)", "Pull the hallway fire alarm pull-station", "Close the windows and doors before leaving the room"],
-        [1],
-        "R.A.C.E. (Fire Response Order) + P.A.S.S. (Extinguisher Use)",
-        "• R = Rescue / Remove clients in immediate danger FIRST!\n• A = Activate the fire alarm\n• C = Confine / Contain the fire (Close doors & shut off oxygen zone valves)\n• E = Extinguish (if small) or Evacuate\n• P.A.S.S. Extinguisher: Pull pin → Aim at BASE of fire → Squeeze handle → Sweep side to side",
-        "Following the RACE protocol, rescuing the client in immediate danger is always the top priority before sounding the alarm or attempting to contain/extinguish the fire.",
-        "Bedside Pearl: If a ventilator-dependent ICU patient must be evacuated from a fire, disconnect from the mechanical ventilator and manually ventilate with a Bag-Valve-Mask (Ambu bag) while moving the patient!"],
-
-      ["Prioritization & Fundamentals", "Informed Consent: RN vs. Surgeon Responsibilities", "single",
-        "A client scheduled for a laparoscopic cholecystectomy in 30 minutes tells the nurse, 'I signed the consent form earlier, but I still don't understand what the surgeon does if they can't get my gallbladder out through the tiny camera holes.' What is the nurse's most appropriate action?",
-        ["Explain the surgical risks and conversion to an open cholecystectomy to the client", "Notify the surgeon to return and explain the procedure and risks before administering pre-op sedatives", "Administer the prescribed preoperative IV midazolam (Versed) and send the client to the OR", "Tell the client that the surgery is completely safe and not to worry"],
-        [1],
-        "INFORMED CONSENT = Surgeon Explains | RN Witnesses Voluntary Signature BEFORE Sedation!",
-        "• Provider/Surgeon Role: Explain the procedure, benefits, risks, alternatives, and answer clinical questions about the surgery\n• RN Role: Witness that the client is competent, has NOT received sedating/opioid medications yet, and is signing voluntarily\n• Who CANNOT give consent: Minors (except emancipated minors, pregnant minors, STI/substance treatment), sedated/intoxicated patients, patients with advanced dementia",
-        "Explaining the surgical procedure, risks, and potential complications is the legal duty of the surgeon performing the procedure. If the client expresses a lack of understanding, the nurse must hold preoperative sedation and notify the surgeon.",
-        "NCLEX Trap: Never have a patient sign a surgical consent form AFTER they have received preoperative opioids or benzodiazepines!"],
-
-      ["Prioritization & Fundamentals", "Advance Directives, Living Wills & DNR Orders", "single",
-        "An alert, oriented 78-year-old client with metastatic cancer has a signed Do Not Resuscitate (DNR) order and Living Will in the medical chart. The client's adult son arrives and demands, 'If my father's heart stops, I want you to do CPR and put him on a ventilator!' How should the nurse respond?",
-        ["Tell the son that the hospital will cancel the DNR immediately since he is the next of kin", "Explain respectfully that while the client is competent, the client's own legal wishes and DNR order must be honored, and offer to arrange a family meeting with the client and provider", "Ask the hospital security guards to escort the son out of the building", "Secretly remove the DNR wristband so the code team performs CPR"],
-        [1],
-        "AUTONOMY Rule = Competent Patient's Wishes Override Family Demands!",
-        "• Living Will = Document stating which medical treatments the patient wants or refuses\n• Durable Power of Attorney for Healthcare (Healthcare Proxy) = Person chosen to make decisions ONLY AFTER the patient becomes incapacitated\n• Family members CANNOT override the wishes or DNR of a competent adult patient!",
-        "Ethical autonomy and healthcare law dictate that an alert, competent adult's advance directive and DNR order take legal precedence over the wishes of family members.",
-        "Bedside Pearl: Even if a patient becomes unresponsive during cardiac arrest, a valid signed DNR order in the chart must be honored."],
-
-      ["Prioritization & Fundamentals", "HIPAA Confidentiality & Breaches of Privacy", "single",
-        "Which situation represents a violation of the Health Insurance Portability and Accountability Act (HIPAA) requiring immediate intervention by the charge nurse?",
-        ["An RN gives a telephone handoff report to the radiology nurse who is about to receive the client for an MRI", "A nursing student takes a photo of a client's interesting wound on a personal smartphone to study at home, with the client's face cropped out", "The public health nurse reports a newly diagnosed case of active pulmonary tuberculosis to the state health department without the client's permission", "The nurse discusses a client's blood glucose trends with the oncoming shift nurse in a private report room"],
-        [1],
-        "HIPAA Rule = Only Healthcare Team Directly Involved in Care + Mandatory Reporting Exceptions",
-        "• Allowed WITHOUT patient consent: Sharing info with health team directly caring for the patient, AND mandatory reporting of Abuse (Child/Elder), Gunshot/Stab wounds, and Communicable Diseases (TB, STI, Measles) to public health/authorities\n• Strictly FORBIDDEN: Looking up charts of patients not assigned to you (even yourself or family!), discussing patients in elevators/cafeterias, taking photos on personal phones, or posting anything on social media!",
-        "Taking any photograph of a client or their body parts on a personal device violates HIPAA privacy and security rules, even if identifying features appear cropped out. Mandatory reporting of tuberculosis to public health authorities is legally required and exempt from HIPAA restrictions.",
-        "NCLEX Trap: A nurse is NOT allowed to open their own hospital electronic health record or a family member's chart directly—they must go through Medical Records!"],
-
-      ["Prioritization & Fundamentals", "Therapeutic Communication & Countertransference", "single",
-        "A client who just learned that their breast biopsy is positive for invasive carcinoma begins crying and says, 'I am terrified that I am going to die and leave my young children behind.' Which response by the nurse demonstrates therapeutic communication?",
-        ["'Don't worry, modern chemotherapy cures almost everyone with breast cancer now.'", "'Why do you think you are going to die when we caught it early?'", "'This must be overwhelming and frightening news for you. Tell me more about what you are feeling right now.'", "'Let's focus on something positive—your husband is here to support you.'"],
-        [2],
-        "THERAPEUTIC Communication = Reflect Feelings + Open-Ended | Avoid 'Why' & False Reassurance!",
-        "• ALWAYS Choose: Empathy ('This must be frightening...'), Open-ended ('Tell me more...'), Silence, Offering Self ('I will sit with you'), or 'Examine my own feelings' (prevents countertransference in psych!)\n• NEVER Choose on NCLEX:\n  - 'Why...' questions (Makes client defensive!)\n  - False reassurance ('Everything will be fine / Don't worry')\n  - Giving personal advice ('If I were you...')\n  - Changing the subject or minimizing feelings",
-        "Acknowledging the client's fear ('This must be overwhelming and frightening') and using an open-ended invitation ('Tell me more...') validates emotions and promotes therapeutic exploration.",
-        "NCLEX Trap: Eliminate any answer choice that starts with 'Why,' says 'Don't worry,' or compares the patient to the nurse's personal life!"],
-
-      ["Prioritization & Fundamentals", "Suicide Risk Assessment & Sudden Mood Improvement", "single",
-        "A client hospitalized for severe major depressive disorder has been withdrawn, hopeless, and anergic for 2 weeks. Three days after starting fluoxetine (Prozac), the client suddenly appears cheerful, energetic, and begins giving away prized personal belongings to other clients on the unit. How should the nurse interpret and respond to this behavior?",
-        ["Document that the antidepressant has achieved full remission and prepare the client for discharge", "Recognize that the client is at HIGH imminent risk for suicide (having finalized a suicide plan and gained energy to act on it), ask directly about suicide, and initiate 1:1 continuous observation", "Praise the client for sharing generously with peers on the unit", "Transfer the client to a secluded room at the far end of the hallway for privacy"],
-        [1],
-        "SUICIDE Red Flag = Sudden Calm/Happy Mood + Giving Away Belongings + Early Antidepressant Energy!",
-        "• When a severely depressed patient starts an antidepressant (or finalizes a suicide plan), their physical ENERGY returns BEFORE hopelessness resolves → Peak Suicide Risk!\n• Warning Signs: Sudden calm/elation, giving away prized possessions, saying 'Everything will be taken care of soon'\n• Action: Ask DIRECTLY ('Are you thinking of killing yourself?') & institute 1:1 continuous line-of-sight observation!",
-        "A sudden lift in mood accompanied by giving away prized possessions in a depressed client indicates that the client has resolved their ambivalence by deciding to die by suicide and now has the physical energy to carry out the plan.",
-        "NCLEX Trap: Asking a client directly about suicide does NOT plant the idea in their head—always ask directly and never leave an actively suicidal client alone!"],
-
-      ["Prioritization & Fundamentals", "Delirium vs. Dementia vs. Depression", "single",
-        "An 82-year-old client with no history of cognitive impairment is admitted with a hip fracture and suddenly becomes acutely confused, agitated, and visually hallucinating at 10:00 PM. Vital signs reveal T 101.2°F (38.4°C) and foul-smelling cloudy urine. What condition is the client experiencing?",
-        ["Early-onset Alzheimer's dementia", "Acute delirium (likely secondary to a urinary tract infection, hypoxia, or medications)", "Chronic vascular dementia", "Catatonic schizophrenia"],
-        [1],
-        "DELIRIUM = Acute, Fluctuating & Reversible (Check UTI & Hypoxia!) | DEMENTIA = Slow & Irreversible",
-        "• DELIRIUM: Sudden onset (hours to days), fluctuating consciousness/attention, reversible once underlying cause is treated (#1 cause in older adults = UTI, Hypoxia, Dehydration, Electrolytes, Opioids/Anticholinergics!)\n• DEMENTIA: Insidious, gradual onset (months to years), progressive, irreversible memory & executive loss (alert level of consciousness early on)",
-        "Acute onset of fluctuating confusion and hallucinations over hours or days in an older adult is delirium, most commonly triggered by an underlying infection (such as a UTI), hypoxia, or polypharmacy.",
-        "NCLEX Trap: Whenever an older adult becomes acutely confused in the hospital, check SpO2 (hypoxia) and urinalysis (UTI) FIRST!"],
-
-      ["Prioritization & Fundamentals", "Pressure Injury Staging (Stages 1–4 & Unstageable)", "single",
-        "The nurse is assessing a sacral pressure injury on an immobile client. The wound bed is completely covered by a thick, leathery, black/brown eschar and yellow slough, making it impossible to see the base of the wound. How should the nurse stage this pressure injury?",
-        ["Stage 2 pressure injury", "Stage 3 pressure injury", "Stage 4 pressure injury", "Unstageable pressure injury"],
-        [3],
-        "PRESSURE INJURY Staging 1 to 4 + Unstageable",
-        "• Stage 1: Intact skin with NON-BLANCHABLE redness (erythema)\n• Stage 2: Partial-thickness skin loss (Pink/red dermis exposed or intact/ruptured serum blister — NO slough!)\n• Stage 3: Full-thickness skin loss into Subcutaneous FAT (Slough may be present, but NO bone/tendon/muscle visible)\n• Stage 4: Full-thickness loss with exposed BONE, TENDON, or MUSCLE\n• Unstageable: Base of wound is completely obscured by Slough (yellow/tan) or Eschar (black/brown)—cannot stage until debrided!",
-        "When the base of a full-thickness pressure injury is obscured by slough or eschar, the true depth cannot be determined, so it must be classified as Unstageable until debrided (note: stable dry eschar on an ischemic heel should NOT be debrided).",
-        "NCLEX Trap: If any slough is present, a wound can NEVER be Stage 1 or Stage 2—it is at least Stage 3, Stage 4, or Unstageable!"],
-
-      ["Prioritization & Fundamentals", "Post-Op Complications: Wound Dehiscence & Evisceration", "single",
-        "A client with obesity who is 5 days post-exploratory laparotomy coughs forcefully and states, 'I felt something pop in my stomach!' The nurse lifts the gown and sees loops of pink small bowel protruding through the opened abdominal incision. What is the nurse's FIRST action?",
-        ["Gently push the protruding loops of bowel back into the abdominal cavity with sterile gloves", "Call for help, cover the protruding organs with a sterile dressing moistened with warm sterile 0.9% Normal Saline, and place the client in Low Fowler's position with knees bent", "Place the client flat on their stomach and apply an abdominal binder tightly", "Instruct the client to drink 500 mL of water before going to the OR"],
-        [1],
-        "EVISCERATION = Cover with Warm Sterile Saline Gauze + Low Fowler's with Knees Bent!",
-        "• Dehiscence = Separation of wound edges (often preceded by a gush of serosanguineous fluid)\n• Evisceration = Internal organs protrude out of incision (Surgical Emergency!):\n  1. Stay with patient & call for help/surgeon\n  2. Place in LOW Fowler's (HOB 15–20°) with KNEES BENT (relieves tension on abdominal wall!)\n  3. Cover organs with STERILE gauze soaked in warm sterile 0.9% Normal Saline (NEVER push organs back in!)\n  4. Keep NPO and prepare for OR",
-        "In abdominal wound evisceration, placing the client in Low Fowler's position with knees flexed reduces abdominal wall tension, and covering the exposed viscera with sterile normal saline-moistened dressings prevents tissue necrosis until emergency surgical repair.",
-        "NCLEX Trap: Teach postoperative abdominal surgery clients to splint their incision with a folded pillow or blanket when coughing to prevent dehiscence!"],
-
-      ["Prioritization & Fundamentals", "Malignant Hyperthermia (Dantrolene)", "single",
-        "During general anesthesia induction with succinylcholine and sevoflurane in the operating room, the client suddenly develops severe masseter jaw muscle rigidity, generalized muscle rigidity, tachycardia (HR 156 bpm), a rapid spike in end-tidal CO2 (hypercapnia), and a temperature rising to 105.2°F (40.6°C). Which life-saving medication must the nurse prepare to administer STAT?",
-        ["Atropine sulfate", "Dantrolene sodium (Dantrium) IV", "Naloxone (Narcan)", "Epinephrine 1 mg IV"],
-        [1],
-        "MALIGNANT HYPERTHERMIA = High CO2 & Muscle Rigidity First (Fever is Late!) → Give DANTROLENE!",
-        "• Triggered by Volatile Inhaled Anesthetics (-flurane) + Succinylcholine in genetically susceptible patients\n• EARLY Signs: Unexplained Tachycardia, Rapid rise in End-Tidal CO2 (ETCO2), Masseter (jaw) muscle rigidity\n• LATE Sign: Skyrocketing Fever (105°F+) & Rhabdomyolysis/Hyperkalemia\n• Treatment: Stop anesthesia → 100% O2 → IV DANTROLene (Skeletal muscle relaxant) → Cold IV Saline & Ice packs!",
-        "Malignant hyperthermia is a hypermetabolic skeletal muscle crisis triggered by succinylcholine and volatile anesthetics. Dantrolene sodium stops calcium release from the sarcoplasmic reticulum, relaxing skeletal muscle and halting hypermetabolism.",
-        "NCLEX Trap: High fever is a LATE sign of Malignant Hyperthermia—tachycardia, rising End-Tidal CO2, and masseter muscle rigidity happen FIRST!"],
-
-      ["Prioritization & Fundamentals", "Foley Catheter Insertion & Coudé Catheter for BPH", "single",
-        "The nurse is inserting an indwelling Foley catheter into an older adult male client with Benign Prostatic Hyperplasia (BPH) and acute urinary retention. Which specialized catheter is designed to navigate past an enlarged prostate, and how far should the nurse insert the catheter before inflating the balloon?",
-        ["Straight Robinson catheter; insert 2 inches and inflate balloon immediately", "Coudé (curved-tip) catheter; advance all the way to the Y-bifurcation (hub) and confirm urine return before inflating the balloon", "Three-way continuous bladder irrigation catheter; inflate the balloon while in the prostatic urethra", "Condom catheter; insert 4 inches into the meatus"],
-        [1],
-        "BPH Male Catheterization = COUDÉ (Curved Tip) + Advance All the Way to the Y-Hub!",
-        "• Coudé Catheter = Firm, slightly curved tip designed to slip around an enlarged prostate in BPH\n• Male Insertion Rule: Hold penis at 90 degrees, advance catheter ALL THE WAY to the Y-bifurcation (7–9 inches) AND see urine flow BEFORE inflating the balloon!\n• Why? Inflating the balloon prematurely in the male urethra causes severe urethral rupture and bleeding!",
-        "A Coudé catheter features a curved tip that navigates past an enlarged prostate gland. In male clients, advancing the catheter to the Y-bifurcation before inflating the balloon ensures the balloon is safely inside the bladder rather than the prostatic urethra.",
-        "Bedside Pearl: If a severely distended bladder (> 1,000 mL) is drained all at once, monitor the client for hypotension and bladder spasms."],
-
-      ["Prioritization & Fundamentals", "Hypokalemia vs. Hyperkalemia IV Potassium Safety Rule", "single",
-        "A client with severe hypokalemia (serum K+ 2.6 mEq/L) has a prescription for Potassium Chloride (KCl) 20 mEq IV. Which nursing action is MANDATORY to prevent fatal cardiac arrest during administration?",
-        ["Administer the potassium chloride by rapid direct IV push over 2 minutes", "Infuse the diluted potassium chloride slowly via an IV infusion pump at a rate not exceeding 10 mEq/hr peripherally (and verify adequate urine output >= 30 mL/hr before starting)", "Inject the undiluted potassium chloride intramuscularly into the deltoid muscle", "Add 80 mEq of concentrated potassium directly into an already-hanging IV bag"],
-        [1],
-        "IV POTASSIUM Rule = NEVER IV Push, Always on a Pump, Check Urine Output First ('No Pee, No K')!",
-        "• NEVER give Potassium IV Push or IM (IV push KCl causes immediate fatal cardiac arrest / asystole!)\n• ALWAYS dilute in IV fluid and infuse on a smart IV infusion pump (Max peripheral rate = 10 mEq/hr; Max concentration = 40 mEq/L peripherally; burns veins!)\n• Rule: 'No Pee, No K!' — Always verify urine output >= 30 mL/hr before giving potassium!",
-        "Potassium chloride must never be administered via IV push or intramuscularly. It must be diluted, infused slowly via an electronic infusion pump, and given only after verifying adequate renal function and urine output (>= 30 mL/hr).",
-        "NCLEX Trap: Never add concentrated KCl to an already-hanging IV bag (it pools at the bottom of the bag and delivers a lethal bolus)!"]
-    ];
-
-    // Transform compact array into full structured objects
-    const QUESTIONS = RAW_QUESTIONS.map((q, idx) => ({
-      id: idx + 1,
-      category: q[0],
-      topic: q[1],
-      type: q[2],
-      stem: q[3],
-      options: q[4],
-      correct: q[5],
-      mnemonicTitle: q[6],
-      mnemonicBody: q[7],
-      rationale: q[8],
-      teaching: q[9]
-    }));
+    let QUESTIONS = [];
+    let questionsPromise = null;
+
+    function loadQuestions() {
+      if (!questionsPromise) {
+        questionsPromise = sb.from('questions')
+          .select('id, category, topic, type, stem, options, correct, mnemonic_title, mnemonic_body, rationale, teaching')
+          .order('id')
+          .then(({ data, error }) => {
+            if (error) throw error;
+            QUESTIONS = (data || []).map(r => ({
+              id: r.id,
+              category: r.category,
+              topic: r.topic,
+              type: r.type,
+              stem: r.stem,
+              options: Array.isArray(r.options) ? r.options : [],
+              correct: Array.isArray(r.correct) ? r.correct : [],
+              mnemonicTitle: r.mnemonic_title || '',
+              mnemonicBody: r.mnemonic_body || '',
+              rationale: r.rationale || '',
+              teaching: r.teaching || ''
+            }));
+            updateCategoryCounts();
+            return QUESTIONS;
+          })
+          .catch(err => { questionsPromise = null; throw err; });
+      }
+      return questionsPromise;
+    }
+
+    function updateCategoryCounts() {
+      const n = c => QUESTIONS.filter(q => q.category === c).length;
+      const set = (id, text) => { const el = document.getElementById(id); if (el) el.textContent = text; };
+      set('cat-ALL', `All Categories (${QUESTIONS.length})`);
+      set('cat-Med-Surg', `Med-Surg (${n('Med-Surg')})`);
+      set('cat-Pharmacology', `Pharmacology (${n('Pharmacology')})`);
+      set('cat-OB', `Maternal & Peds (${n('OB & Peds')})`);
+      set('cat-Prio', `Prioritization & Fundamentals (${n('Prioritization & Fundamentals')})`);
+      set('tab-simulator', `Exam Simulator (${QUESTIONS.length})`);
+      set('tab-vault', `Mnemonic Vault (${QUESTIONS.length})`);
+    }
+
+    function showQuestionStatus(html) {
+      document.getElementById('q-stem').innerHTML = html;
+      document.getElementById('options-container').innerHTML = '';
+      setSubmitEnabled(false);
+    }
 
     // ============================================================================
     // 3. SIMULATOR STATE & CONTROLLERS
@@ -2433,7 +1563,7 @@
     }
 
     function switchTab(tab) {
-      ['simulator', 'vault', 'labs', 'pricing', 'builder'].forEach(t => {
+      ['simulator', 'vault', 'labs', 'pricing'].forEach(t => {
         document.getElementById('view-' + t).classList.add('hidden');
         document.getElementById('tab-' + t).className = 'px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all text-slate-400 hover:text-white';
       });
@@ -2483,15 +1613,6 @@
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    function exportJSON() {
-      const blob = new Blob([JSON.stringify(QUESTIONS, null, 2)], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'nextgen_nurses_100_nclex_questions.json';
-      a.click();
-      setTimeout(() => URL.revokeObjectURL(url), 1000);
-    }
 
     // Keyboard shortcuts in the simulator: A–E select, Enter submit, ←/→ navigate, F flag
     document.addEventListener('keydown', e => {
