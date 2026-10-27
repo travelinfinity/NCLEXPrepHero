@@ -147,6 +147,34 @@
     .bt-chip[draggable="true"]:active { cursor: grabbing; }
     .bt-tip { margin: 0; font-size: 12.5px; color: #64748B; text-align: center; }
     .q-light .text-emerald-100\/90 { color: #065F46; }
+
+    /* ---------- Payment lock screen ---------- */
+    #access-locked { position: fixed; inset: 0; z-index: 60; overflow-y: auto; display: flex; align-items: flex-start; justify-content: center; padding: 40px 16px; background: radial-gradient(1200px 600px at 50% -10%, #312E81 0%, #0d0d14 60%); }
+    #access-locked.hidden { display: none; }
+    .lk-card { width: 100%; max-width: 560px; margin: auto 0; background: #FFFFFF; color: #0F172A; border-radius: 24px; padding: 30px 26px; box-shadow: 0 30px 80px rgba(0,0,0,.45); text-align: center; animation: lkIn .4s ease; }
+    @keyframes lkIn { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+    .lk-icon { width: 58px; height: 58px; margin: 0 auto 12px; border-radius: 18px; display: grid; place-items: center; font-size: 26px; background: #EEF2FF; }
+    .lk-eyebrow { margin: 0; font: 700 11.5px/1 Inter, sans-serif; letter-spacing: .12em; text-transform: uppercase; color: #6366F1; }
+    .lk-card h2 { font: 800 26px/1.2 'Plus Jakarta Sans', sans-serif; margin: 8px 0 10px; color: #0F172A; }
+    .lk-lede { margin: 0 0 20px; font-size: 15px; line-height: 1.6; color: #475569; overflow-wrap: anywhere; }
+    .lk-lede b { color: #0F172A; }
+    .lk-plans { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+    @media (max-width: 460px) { .lk-plans { grid-template-columns: 1fr; } }
+    .lk-plan { position: relative; display: flex; flex-direction: column; gap: 4px; padding: 18px 14px 16px; border-radius: 16px; border: 2px solid #E2E8F0; background: #F8FAFC; color: #0F172A; text-decoration: none; transition: transform .15s, border-color .15s, box-shadow .15s; }
+    .lk-plan:hover { transform: translateY(-2px); border-color: #818CF8; box-shadow: 0 10px 24px rgba(79,70,229,.15); }
+    .lk-plan.best { border-color: #4F46E5; background: #EEF2FF; }
+    .lk-plan b { font: 700 14px/1.2 Inter, sans-serif; }
+    .lk-plan em { font: 800 28px/1.1 'Plus Jakarta Sans', sans-serif; font-style: normal; color: #3730A3; }
+    .lk-plan span { font-size: 12.5px; color: #64748B; }
+    .lk-badge { position: absolute; top: -11px; left: 50%; transform: translateX(-50%); background: #4F46E5; color: #FFFFFF !important; font: 700 10.5px/1 Inter, sans-serif !important; padding: 6px 10px; border-radius: 999px; letter-spacing: .04em; white-space: nowrap; }
+    .lk-note { margin: 0 0 12px; font-size: 13.5px; line-height: 1.55; color: #475569; background: #FFFBEB; border: 1px solid #FDE68A; border-radius: 12px; padding: 10px 12px; }
+    .lk-msg { min-height: 0; font-size: 13.5px; color: #BE123C; margin-bottom: 8px; }
+    .lk-msg:empty { display: none; }
+    .lk-actions { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+    .lk-check { width: 100%; padding: 13px 18px; border-radius: 999px; border: 0; background: linear-gradient(90deg, #4F46E5, #7C3AED); color: #FFFFFF; font: 700 14px/1 Inter, sans-serif; cursor: pointer; }
+    .lk-check:disabled { opacity: .6; cursor: wait; }
+    .lk-link { background: none; border: 0; padding: 2px; font: 600 13px/1.3 Inter, sans-serif; color: #4F46E5; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+
     /* ---------- Adaptive exam ---------- */
     #cat-bar { display: none; }
     body.cat-on #cat-bar { display: flex; grid-column: 1 / -1; }
@@ -801,6 +829,34 @@
   <!-- ========================================================================= -->
   <!-- PART 2: FULL NCLEX-RN PRO SIMULATOR DASHBOARD                             -->
   <!-- ========================================================================= -->
+  <!-- ========================================================================= -->
+  <!-- ACCESS LOCK: shown to signed-in accounts that haven't been unlocked yet     -->
+  <!-- ========================================================================= -->
+  <div id="access-locked" class="hidden" role="dialog" aria-modal="true" aria-labelledby="lock-title">
+    <div class="lk-card">
+      <div class="lk-icon" aria-hidden="true">🔒</div>
+      <p class="lk-eyebrow" id="lock-eyebrow">Account ready</p>
+      <h2 id="lock-title">One step left: choose your plan</h2>
+      <p class="lk-lede" id="lock-lede">You're signed in as <b id="lock-email"></b>. Pick a plan below to unlock every question, the adaptive exam and your readiness reports.</p>
+      <div class="lk-plans">
+        <a class="lk-plan best" data-plan-url="https://buy.stripe.com/cNi7sE4lY49pb13bMo00009" href="https://buy.stripe.com/cNi7sE4lY49pb13bMo00009" target="_blank" rel="noopener">
+          <span class="lk-badge">Best value</span>
+          <b>Every 3 months</b><em>A$84.99</em><span>about A$28.33 a month</span>
+        </a>
+        <a class="lk-plan" data-plan-url="https://buy.stripe.com/cNi5kwf0C5dt8SV7w800007" href="https://buy.stripe.com/cNi5kwf0C5dt8SV7w800007" target="_blank" rel="noopener">
+          <b>Monthly</b><em>A$42.99</em><span>billed every month</span>
+        </a>
+      </div>
+      <p class="lk-note">Use <b>this same email</b> at checkout. We unlock your account once your payment is confirmed, usually within a few hours. Then tap the button below.</p>
+      <div class="lk-msg" id="lock-msg" role="status"></div>
+      <div class="lk-actions">
+        <button type="button" class="lk-check" id="lock-check" onclick="recheckAccess()">I've paid: check my access</button>
+        <a class="lk-link" href="https://chat.whatsapp.com/FePj4Ew2NkqHF14FLwMcKS" target="_blank" rel="noopener">Need help? WhatsApp support</a>
+        <button type="button" class="lk-link" onclick="lockLogout()">Log out</button>
+      </div>
+    </div>
+  </div>
+
   <div id="app-dashboard" class="hidden min-h-screen flex flex-col bg-slate-950">
     <!-- TOP NAVIGATION BAR -->
     <header class="sticky top-0 z-40 bg-slate-900/95 backdrop-blur border-b border-slate-800 px-4 lg:px-8 py-3">
@@ -1615,8 +1671,67 @@
     }
 
     let dashboardReady = false;
+
+    // ============================================================================
+    // PAYMENT LOCK: only accounts unlocked in nclex_profiles can open the app
+    // ============================================================================
+    let accessUser = null;
+    async function nclexAccess() {
+      const { data: u } = await sb.auth.getUser();
+      const user = u && u.user;
+      if (!user) return { ok: false, reason: 'signed-out' };
+      accessUser = user;
+      const { data, error } = await sb.from('nclex_profiles').select('has_access, access_until').eq('id', user.id).maybeSingle();
+      if (error) return { ok: false, reason: 'error', error };
+      if (!data || !data.has_access) return { ok: false, reason: 'locked' };
+      if (data.access_until && new Date(data.access_until) <= new Date()) return { ok: false, reason: 'expired' };
+      return { ok: true };
+    }
+    function showLocked(email, access) {
+      document.getElementById('funnel-wrapper').classList.add('hidden');
+      document.getElementById('app-dashboard').classList.add('hidden');
+      const box = document.getElementById('access-locked');
+      box.classList.remove('hidden');
+      document.getElementById('lock-email').textContent = email || (accessUser && accessUser.email) || '';
+      const expired = access && access.reason === 'expired';
+      document.getElementById('lock-eyebrow').textContent = expired ? 'Subscription ended' : 'Account ready';
+      document.getElementById('lock-title').textContent = expired ? 'Renew to keep studying' : 'One step left: choose your plan';
+      document.getElementById('lock-msg').textContent = (access && access.reason === 'error')
+        ? "We couldn't check your access just now. Check your connection and try again." : '';
+      // pre-fill the student's email at Stripe checkout and tag the payment with their account
+      box.querySelectorAll('[data-plan-url]').forEach(a => {
+        const u = new URL(a.dataset.planUrl);
+        const em = email || (accessUser && accessUser.email);
+        if (em) u.searchParams.set('prefilled_email', em);
+        if (accessUser) u.searchParams.set('client_reference_id', accessUser.id);
+        a.href = u.toString();
+      });
+      window.scrollTo(0, 0);
+    }
+    function hideLocked() { document.getElementById('access-locked').classList.add('hidden'); }
+    async function recheckAccess() {
+      const btn = document.getElementById('lock-check'), msg = document.getElementById('lock-msg');
+      btn.disabled = true; btn.textContent = 'Checking…';
+      const access = await nclexAccess().catch(err => ({ ok: false, reason: 'error', error: err }));
+      btn.disabled = false; btn.textContent = "I've paid: check my access";
+      if (access.ok) { unlockSimulatorDashboard(accessUser && accessUser.email); return; }
+      msg.textContent = access.reason === 'error'
+        ? "We couldn't check your access just now. Check your connection and try again."
+        : "Not unlocked yet. If you've just paid, we'll unlock you shortly. Need it sooner? Message WhatsApp support with your receipt.";
+    }
+    async function lockLogout() { hideLocked(); await logoutToIntro(); }
+
     async function unlockSimulatorDashboard(username) {
       forceCloseLoginModal();
+      let access;
+      try { access = await nclexAccess(); } catch (err) { access = { ok: false, reason: 'error', error: err }; }
+      if (!access.ok) {
+        if (access.reason === 'signed-out') { showFunnel(); return; }
+        if (access.error) console.error(access.error);
+        showLocked(username, access);
+        return;
+      }
+      hideLocked();
       document.getElementById('funnel-wrapper').classList.add('hidden');
       document.getElementById('app-dashboard').classList.remove('hidden');
       if (username) {
@@ -1646,6 +1761,7 @@
     }
 
     function showFunnel() {
+      hideLocked();
       stopTimer();
       QUESTIONS = []; filteredQuestions = []; questionsPromise = null; dashboardReady = false;
       document.getElementById('app-dashboard').classList.add('hidden');
