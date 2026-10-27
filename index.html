@@ -137,6 +137,182 @@
     .bt-slot.ok { border-color: #10B981; background: #ECFDF5; }
     .bt-slot.bad { border-color: #F43F5E; background: #FFF1F2; }
     .bt-empty { color: #94A3B8; font-size: 12px; font-weight: 500; }
+    .bt-slot { position: relative; }
+    .bt-slot.over { border-color: #4F46E5; border-style: solid; background: #E0E7FF; transform: scale(1.03); }
+    .bt-slot.filled[onclick] { cursor: pointer; }
+    .bt-x { position: absolute; top: 2px; right: 7px; font-size: 14px; color: #6366F1; font-weight: 700; }
+    .bt-grip { display: inline-block; margin-right: 6px; color: #94A3B8; font-size: 12px; }
+    .bt-chip.sel .bt-grip { color: #C7D2FE; }
+    .bt-chip[draggable="true"] { cursor: grab; }
+    .bt-chip[draggable="true"]:active { cursor: grabbing; }
+    .bt-tip { margin: 0; font-size: 12.5px; color: #64748B; text-align: center; }
+    .q-light .text-emerald-100\/90 { color: #065F46; }
+    /* ---------- Adaptive exam ---------- */
+    #cat-bar { display: none; }
+    body.cat-on #cat-bar { display: flex; grid-column: 1 / -1; }
+    body.cat-on #filter-bar, body.cat-on #mode-nav, body.cat-on #rationale-col, body.cat-on #prev-btn, body.cat-on #next-btn, body.cat-on #bookmark-btn { display: none !important; }
+    body.cat-on #question-col { grid-column: 1 / -1; width: 100%; max-width: 860px; margin: 0 auto; }
+    body.cat-on #q-topic:empty { display: none; }
+    .cat-bar { align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; width: 100%; max-width: 860px; margin: 0 auto; padding: 10px 14px; background: #1E1B4B; color: #FFFFFF; border-radius: 14px; }
+    .cat-bar-l, .cat-bar-r { display: flex; align-items: center; gap: 10px; }
+    .cat-bar b { font: 700 15px/1 'Plus Jakarta Sans', Inter, sans-serif; color: #FFFFFF; }
+    .cat-pill { font: 700 11px/1 Inter, sans-serif; background: #4F46E5; padding: 6px 9px; border-radius: 999px; letter-spacing: .02em; }
+    #cat-clock { font: 600 13px/1 'JetBrains Mono', monospace; color: #C7D2FE; }
+    .cat-bar button { font: 600 12px/1 Inter, sans-serif; color: #FECDD3; border: 1px solid #FB7185; padding: 7px 11px; border-radius: 9px; background: transparent; }
+    .cat-bar button:hover { background: #881337; }
+    .cat { max-width: 900px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; color: #0F172A; }
+    .cat-hero { background: linear-gradient(135deg, #312E81, #6D28D9); color: #FFFFFF; border-radius: 22px; padding: 30px; }
+    .cat-hero h2 { font: 800 clamp(24px, 4vw, 34px)/1.15 'Plus Jakarta Sans', sans-serif; margin: 6px 0 10px; color: #FFFFFF; }
+    .cat-hero p { margin: 0 0 18px; color: #E0E7FF; font-size: 15px; line-height: 1.6; max-width: 640px; }
+    .cat-eyebrow { font: 700 11.5px/1 Inter, sans-serif; letter-spacing: .12em; text-transform: uppercase; color: #A5B4FC; margin: 0; }
+    .cat-report .cat-eyebrow { color: #6366F1; }
+    .cat-go { font: 700 14px/1 Inter, sans-serif; padding: 13px 20px; border-radius: 12px; border: 0; background: #FFFFFF; color: #3730A3; box-shadow: 0 6px 18px rgba(15,23,42,.18); }
+    .cat-report .cat-go { background: #4F46E5; color: #FFFFFF; }
+    .cat-alt { font: 600 14px/1 Inter, sans-serif; padding: 13px 18px; border-radius: 12px; border: 1px solid #CBD5E1; background: #FFFFFF; color: #334155; }
+    .cat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; }
+    .cat-grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+    .cat-card { background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 18px; padding: 18px; }
+    .cat-card h3 { font: 700 15px/1.3 'Plus Jakarta Sans', sans-serif; margin: 0 0 8px; color: #0F172A; }
+    .cat-card p { margin: 0; font-size: 13.5px; line-height: 1.55; color: #475569; }
+    .cat-note { background: #EEF2FF; border: 1px solid #C7D2FE; color: #312E81; border-radius: 16px; padding: 14px 16px; font-size: 14px; line-height: 1.55; }
+    .cat-hist { display: flex; flex-direction: column; }
+    .cat-hrow { display: grid; grid-template-columns: 70px 1fr auto 46px; gap: 10px; align-items: center; padding: 9px 0; border-top: 1px solid #F1F5F9; font-size: 13px; color: #334155; }
+    .cat-hrow:first-child { border-top: 0; }
+    .cat-hrow b { text-align: right; color: #0F172A; }
+    .cat-tag { font: 700 11px/1 Inter, sans-serif; padding: 5px 8px; border-radius: 999px; }
+    .cat-tag.above { background: #D1FAE5; color: #065F46; } .cat-tag.avg { background: #FEF3C7; color: #92400E; }
+    .cat-tag.below { background: #FFE4E6; color: #9F1239; } .cat-tag.inc { background: #F1F5F9; color: #475569; }
+    .cat-report { display: flex; flex-direction: column; gap: 16px; }
+    .cat-result { border-radius: 22px; padding: 26px; border: 2px solid; background: #FFFFFF; animation: catIn .5s ease; }
+    @keyframes catIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+    .cat-report.above .cat-result { border-color: #34D399; background: linear-gradient(180deg, #ECFDF5, #FFFFFF 60%); }
+    .cat-report.avg .cat-result { border-color: #FBBF24; background: linear-gradient(180deg, #FFFBEB, #FFFFFF 60%); }
+    .cat-report.below .cat-result { border-color: #FB7185; background: linear-gradient(180deg, #FFF1F2, #FFFFFF 60%); }
+    .cat-report.inc .cat-result { border-color: #CBD5E1; }
+    .cat-band { font: 800 clamp(28px, 5vw, 40px)/1.1 'Plus Jakarta Sans', sans-serif; margin: 8px 0 12px; }
+    .cat-report.above .cat-band { color: #047857; } .cat-report.avg .cat-band { color: #B45309; } .cat-report.below .cat-band { color: #BE123C; } .cat-report.inc .cat-band { color: #475569; }
+    .cat-chance { display: flex; align-items: baseline; flex-wrap: wrap; gap: 10px; margin-bottom: 14px; }
+    .cat-chance span { font: 600 13px/1 Inter, sans-serif; color: #475569; }
+    .cat-chance b { font: 800 18px/1 'Plus Jakarta Sans', sans-serif; color: #0F172A; }
+    .cat-chance em { font: 800 18px/1 'JetBrains Mono', monospace; font-style: normal; color: #4F46E5; }
+    .cat-gauge { margin: 6px 0 16px; }
+    .cat-gauge-bar { position: relative; height: 12px; border-radius: 999px; background: linear-gradient(90deg, #FB7185, #FBBF24 45%, #FBBF24 55%, #34D399); }
+    .cat-gauge-bar s { position: absolute; left: 50%; top: -4px; bottom: -4px; width: 2px; background: #0F172A; }
+    .cat-gauge-bar i { position: absolute; top: 50%; width: 22px; height: 22px; border-radius: 999px; background: #FFFFFF; border: 4px solid #4F46E5; transform: translate(-50%, -50%); box-shadow: 0 2px 8px rgba(15,23,42,.25); animation: catSlide 1s ease; }
+    @keyframes catSlide { from { left: 50%; } }
+    .cat-gauge-l { display: flex; justify-content: space-between; font: 600 11px/1 Inter, sans-serif; color: #64748B; margin-top: 8px; }
+    .cat-fb { font-size: 15px; line-height: 1.6; color: #1E293B; margin: 0 0 16px; }
+    .cat-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 12px; }
+    .cat-stats div { background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 12px; padding: 10px; text-align: center; }
+    .cat-stats b { display: block; font: 800 18px/1.2 'Plus Jakarta Sans', sans-serif; color: #0F172A; }
+    .cat-stats span { font-size: 11.5px; color: #64748B; }
+    .cat-reason { margin: 0; font-size: 13px; color: #475569; font-style: italic; }
+    .cat-cons { display: flex; gap: 12px; align-items: flex-start; background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 18px; padding: 16px 18px; font-size: 24px; }
+    .cat-cons.ok { background: #ECFDF5; border-color: #6EE7B7; }
+    .cat-cons b { font: 700 15px/1.3 'Plus Jakarta Sans', sans-serif; color: #0F172A; }
+    .cat-cons p { margin: 4px 0 0; font-size: 13.5px; line-height: 1.55; color: #334155; }
+    .cat-chart { width: 100%; height: auto; border-radius: 10px; border: 1px solid #E2E8F0; margin-bottom: 8px; }
+    .cat-small { font-size: 12px !important; color: #64748B !important; margin: 0; }
+    .cat-bar-row { padding: 7px 0; }
+    .cat-bar-row > div:first-child { display: flex; justify-content: space-between; gap: 8px; font-size: 13px; color: #1E293B; margin-bottom: 5px; }
+    .cat-bar-row b { font: 700 11.5px/1.3 Inter, sans-serif; white-space: nowrap; }
+    .cat-bar-row b.ok { color: #047857; } .cat-bar-row b.mid { color: #B45309; } .cat-bar-row b.low { color: #BE123C; }
+    .cat-track { height: 8px; background: #F1F5F9; border-radius: 999px; overflow: hidden; }
+    .cat-track i { display: block; height: 100%; border-radius: 999px; }
+    .cat-track i.ok { background: #34D399; } .cat-track i.mid { background: #FBBF24; } .cat-track i.low { background: #FB7185; }
+    .cat-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+    #view-cat.hidden { display: none !important; }
+    @media (max-width: 520px) { .cat-hero, .cat-result { padding: 20px; } .cat-hrow { grid-template-columns: 56px 1fr auto; } .cat-hrow b { display: none; } }
+    @media (prefers-reduced-motion: reduce) { .cat-result, .cat-gauge-bar i { animation: none; } }
+
+    .ngn-partial { background: #FFFBEB !important; border-color: #FCD34D !important; color: #78350F !important; }
+    #q-case .case-steps { display: flex; align-items: center; gap: 6px; padding: 8px 10px; background: #F8FAFC; border-bottom: 1px solid #E2E8F0; }
+    #q-case .case-steps span { width: 24px; height: 24px; border-radius: 999px; display: grid; place-items: center; font: 700 11px/1 Inter, sans-serif; background: #E2E8F0; color: #64748B; }
+    #q-case .case-steps span.done { background: #A7F3D0; color: #065F46; }
+    #q-case .case-steps span.now { background: #4F46E5; color: #FFFFFF; box-shadow: 0 0 0 3px #C7D2FE; }
+    #q-case .case-steps em { margin-left: 6px; font: italic 600 12px/1.2 Inter, sans-serif; color: #4338CA; }
+    #q-case .case-table { overflow-x: auto; white-space: normal; }
+    #q-case .case-table table { border-collapse: collapse; font-size: 13px; min-width: 100%; }
+    #q-case .case-table th, #q-case .case-table td { border: 1px solid #E2E8F0; padding: 6px 9px; text-align: left; white-space: nowrap; }
+    #q-case .case-table th { background: #EEF2FF; color: #3730A3; font-weight: 700; }
+    #q-case .case-table tr td:first-child { font-weight: 600; color: #0F172A; }
+    .ngn-mx-wrap { overflow-x: auto; border: 1px solid #E2E8F0; border-radius: 14px; background: #FFFFFF; }
+    .ngn-mx { width: 100%; border-collapse: collapse; font-size: 13.5px; color: #0F172A; }
+    .ngn-mx th { background: #F1F5F9; font: 700 11.5px/1.25 Inter, sans-serif; color: #334155; padding: 9px 6px; text-align: center; border-bottom: 1px solid #E2E8F0; min-width: 76px; }
+    .ngn-mx td { border-top: 1px solid #F1F5F9; padding: 8px 6px; text-align: center; }
+    .ngn-mx td.ngn-mx-row { text-align: left; padding-left: 12px; line-height: 1.4; min-width: 170px; }
+    .ngn-cell { width: 26px; height: 26px; border-radius: 999px; border: 2px solid #94A3B8; background: #FFFFFF; display: inline-grid; place-items: center; transition: all .15s; }
+    .ngn-opt { background: transparent; border: 0; padding: 2px; display: inline-flex; align-items: center; gap: 8px; cursor: pointer; }
+    .ngn-opt:disabled { cursor: default; }
+    .ngn-opt:not(:disabled):hover .ngn-cell { border-color: #4F46E5; }
+    .ngn-cell-lbl { display: none; font: 600 12.5px/1.2 Inter, sans-serif; color: #334155; text-align: left; }
+    @media (max-width: 560px) {
+      .ngn-mx thead { display: none; }
+      .ngn-mx, .ngn-mx tbody { display: block; }
+      .ngn-mx tr { display: flex; flex-wrap: wrap; gap: 6px; padding: 10px 12px; border-top: 1px solid #F1F5F9; }
+      .ngn-mx tr:first-child { border-top: 0; }
+      .ngn-mx td { border: 0; padding: 0; }
+      .ngn-mx td.ngn-mx-row { flex-basis: 100%; min-width: 0; padding: 0 0 4px; font-weight: 600; }
+      .ngn-opt { border: 1.5px solid #E2E8F0; border-radius: 999px; padding: 4px 10px 4px 4px; }
+      .ngn-cell { width: 22px; height: 22px; }
+      .ngn-cell-lbl { display: inline; }
+    }
+    .ngn-cell span { width: 12px; height: 12px; border-radius: 999px; background: transparent; }
+    .ngn-cell.on { border-color: #4F46E5; } .ngn-cell.on span { background: #4F46E5; }
+    .ngn-cell.key { border-color: #059669; background: #ECFDF5; } .ngn-cell.key span { background: #059669; }
+    .ngn-cell.key:not(.on) span { background: transparent; border: 2px dashed #059669; width: 14px; height: 14px; }
+    .ngn-cell.bad { border-color: #E11D48; } .ngn-cell.bad span { background: #E11D48; }
+    .ngn-cloze { font-size: 15px; line-height: 2.4; color: #0F172A; padding: 14px 16px; background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 14px; }
+    .ngn-dd { font: 600 14px Inter, sans-serif; color: #3730A3; background: #EEF2FF; border: 1.5px dashed #818CF8; border-radius: 8px; padding: 4px 8px; margin: 0 2px; max-width: 100%; }
+    .ngn-dd.on { border-style: solid; background: #E0E7FF; }
+    .ngn-dd.ok { border-color: #059669; background: #ECFDF5; color: #065F46; }
+    .ngn-dd.bad { border-color: #E11D48; background: #FFF1F2; color: #9F1239; }
+    .ngn-key-line { margin-top: 10px; font-size: 13.5px; color: #065F46; background: #ECFDF5; border: 1px solid #A7F3D0; border-radius: 10px; padding: 9px 12px; line-height: 1.5; }
+    .ngn-key-line span { color: #047857; font-size: 12.5px; }
+    .ngn-hl { background: #FFFDF5; border: 1px solid #FDE68A; border-radius: 14px; padding: 12px 14px; }
+    .ngn-hl-h { font: 700 12px/1 Inter, sans-serif; color: #92400E; margin-bottom: 8px; letter-spacing: .02em; }
+    .ngn-hl p { margin: 0; font-size: 15px; line-height: 2; color: #1E293B; }
+    .ngn-plain { font-weight: 600; color: #475569; }
+    .ngn-seg { display: inline; text-align: left; font: inherit; color: inherit; background: transparent; border: 0; padding: 2px 3px; border-radius: 5px; border-bottom: 1.5px dotted #CBD5E1; cursor: pointer; -webkit-box-decoration-break: clone; box-decoration-break: clone; transition: background .15s; }
+    .ngn-seg:not(:disabled):hover { background: #FEF9C3; }
+    .ngn-seg.on { background: #FDE047; border-bottom-color: #CA8A04; }
+    .ngn-seg.ok { background: #A7F3D0; border-bottom-color: #059669; }
+    .ngn-seg.miss { background: transparent; outline: 2px dashed #059669; outline-offset: 1px; }
+    .ngn-seg.bad { background: #FECDD3; border-bottom-color: #E11D48; text-decoration: line-through; text-decoration-color: #E11D48; }
+    .ngn-seg:disabled { cursor: default; }
+    .ngn-pool { display: flex; flex-wrap: wrap; gap: 8px; padding: 10px; min-height: 52px; border: 1.5px dashed #CBD5E1; border-radius: 14px; background: #F8FAFC; margin-bottom: 10px; }
+    .ngn-pool.over, .ngn-zone.over { border-color: #4F46E5; background: #E0E7FF; }
+    .ngn-zones { display: grid; grid-template-columns: repeat(var(--cols), minmax(0, 1fr)); gap: 8px; }
+    @media (max-width: 560px) { .ngn-zones { grid-template-columns: 1fr; } }
+    .ngn-zone { display: flex; flex-direction: column; gap: 6px; min-height: 110px; padding: 8px; border: 1.5px solid #CBD5E1; border-radius: 14px; background: #FFFFFF; transition: all .15s; }
+    .ngn-zone.ready { border-color: #818CF8; box-shadow: 0 0 0 3px #EEF2FF; cursor: pointer; }
+    .ngn-zone-h { font: 800 12px/1 'Plus Jakarta Sans', Inter, sans-serif; color: #3730A3; text-transform: uppercase; letter-spacing: .05em; padding: 4px 2px 6px; border-bottom: 1px solid #E2E8F0; }
+    .ngn-chip { text-align: left; font-size: 13px; line-height: 1.35; padding: 8px 11px; border-radius: 10px; border: 1.5px solid #CBD5E1; background: #FFFFFF; color: #0F172A; cursor: grab; transition: all .15s; }
+    .ngn-chip:not(:disabled):hover { border-color: #818CF8; }
+    .ngn-chip.pick { border-color: #4F46E5; background: #4F46E5; color: #FFFFFF; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(79,70,229,.25); }
+    .ngn-chip.pick .bt-grip { color: #C7D2FE; }
+    .ngn-chip.ok { border-color: #059669; background: #ECFDF5; color: #065F46; cursor: default; }
+    .ngn-chip.bad { border-color: #E11D48; background: #FFF1F2; color: #9F1239; cursor: default; }
+    .ngn-chip em, .ngn-row em { display: block; font-style: normal; font-size: 11.5px; font-weight: 700; margin-top: 3px; }
+    .ngn-order { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+    .ngn-row { display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: #FFFFFF; border: 1.5px solid #CBD5E1; border-radius: 12px; cursor: grab; transition: all .15s; color: #0F172A; }
+    .ngn-row.over { border-color: #4F46E5; background: #E0E7FF; }
+    .ngn-row.ok { border-color: #059669; background: #ECFDF5; cursor: default; }
+    .ngn-row.bad { border-color: #E11D48; background: #FFF1F2; cursor: default; }
+    .ngn-row.bad em { color: #BE123C; }
+    .ngn-pos { width: 26px; height: 26px; flex: none; border-radius: 8px; background: #EEF2FF; color: #3730A3; display: grid; place-items: center; font: 800 12px/1 Inter, sans-serif; }
+    .ngn-txt { flex: 1; font-size: 14px; line-height: 1.4; }
+    .ngn-arrows { display: flex; flex-direction: column; gap: 2px; }
+    .ngn-arrows button { width: 30px; height: 22px; border-radius: 6px; border: 1px solid #CBD5E1; background: #F8FAFC; color: #4338CA; font-size: 10px; line-height: 1; }
+    .ngn-arrows button:disabled { opacity: .3; }
+    .ngn-calc { display: flex; align-items: center; gap: 10px; padding: 14px 16px; background: #FFFFFF; border: 1.5px solid #CBD5E1; border-radius: 14px; }
+    .ngn-calc label { display: flex; align-items: center; gap: 10px; font: 700 13px/1 Inter, sans-serif; color: #334155; }
+    .ngn-calc input { width: 140px; font: 700 20px/1 Inter, sans-serif; color: #0F172A; padding: 10px 12px; border: 2px solid #A5B4FC; border-radius: 10px; background: #F8FAFC; outline: none; }
+    .ngn-calc input:focus { border-color: #4F46E5; background: #FFFFFF; }
+    .ngn-unit { font: 700 15px/1 Inter, sans-serif; color: #4338CA; }
+    .ngn-calc.ok { border-color: #059669; background: #ECFDF5; } .ngn-calc.ok input { border-color: #059669; }
+    .ngn-calc.bad { border-color: #E11D48; background: #FFF1F2; } .ngn-calc.bad input { border-color: #E11D48; }
+
     @keyframes pop { 0% { transform: scale(.96); } 60% { transform: scale(1.03); } 100% { transform: none; } }
     .bt-group { border: 1px solid #E2E8F0; border-radius: 14px; padding: 12px; background: #FFFFFF; }
     .bt-gh { margin: 0 0 8px; display: flex; justify-content: space-between; font: 700 12.5px/1.2 'Plus Jakarta Sans', sans-serif; color: #1E293B; }
@@ -643,9 +819,12 @@
         </div>
 
         <!-- Mode Switcher -->
-        <nav class="flex flex-wrap items-center gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800">
+        <nav id="mode-nav" class="flex flex-wrap items-center gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800">
           <button onclick="switchTab('simulator')" id="tab-simulator" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all bg-indigo-600 text-white shadow">
             Exam Simulator
+          </button>
+          <button onclick="switchTab('cat')" id="tab-cat" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all text-slate-400 hover:text-white">
+            🎯 Adaptive Exam
           </button>
           <button onclick="switchTab('vault')" id="tab-vault" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all text-slate-400 hover:text-white">
             Mnemonic Vault
@@ -703,6 +882,12 @@
           <button onclick="setCategory('Mental Health')" id="cat-MH" class="cat-btn px-3 py-1 rounded-lg text-xs font-semibold bg-slate-800/70 text-slate-400 hover:text-white border border-slate-700/60">
             Mental Health
           </button>
+          <button onclick="setCategory('NGN')" id="cat-NGN" class="cat-btn hidden px-3 py-1 rounded-lg text-xs font-semibold bg-slate-800/70 text-slate-400 hover:text-white border border-slate-700/60">
+            🧩 NGN Items
+          </button>
+          <button onclick="setCategory('CASE')" id="cat-CASE" class="cat-btn hidden px-3 py-1 rounded-lg text-xs font-semibold bg-slate-800/70 text-slate-400 hover:text-white border border-slate-700/60">
+            📋 Case Studies
+          </button>
           <button onclick="setCategory('FLAGGED')" id="cat-FLAGGED" class="cat-btn px-3 py-1 rounded-lg text-xs font-semibold bg-slate-800/70 text-slate-400 hover:text-white border border-slate-700/60">
             ★ Flagged (<span id="flag-count">0</span>)
           </button>
@@ -736,9 +921,13 @@
 
       <!-- VIEW 1: EXAM SIMULATOR (SPLIT SCREEN) -->
       <section id="view-simulator" class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        <div id="cat-bar" class="cat-bar">
+          <div class="cat-bar-l"><span class="cat-pill">🎯 Adaptive exam</span><b id="cat-qnum">Question 1</b></div>
+          <div class="cat-bar-r"><span id="cat-clock" title="Time remaining">⏱ 5:00:00</span><button type="button" onclick="catEndEarly()">End exam</button></div>
+        </div>
         
         <!-- Left Column: Question Stem & Interactive Choices -->
-        <div class="lg:col-span-6 bg-slate-900 border border-slate-800 rounded-2xl p-5 lg:p-6 shadow-xl">
+        <div id="question-col" class="lg:col-span-6 bg-slate-900 border border-slate-800 rounded-2xl p-5 lg:p-6 shadow-xl">
           <div class="flex items-center justify-between gap-2 pb-4 mb-4 border-b border-slate-800">
             <div class="flex flex-wrap items-center gap-2">
               <span id="q-number-badge" class="font-mono text-xs font-bold px-2.5 py-1 rounded-md bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
@@ -769,26 +958,26 @@
 
           <div id="q-instruction" class="text-xs text-slate-400 bg-slate-950/90 border border-slate-800 rounded-lg px-3 py-2 mb-4 flex items-center justify-between">
             <span>Select the best answer below.</span>
-            <span class="text-[11px] text-slate-500 hidden sm:inline">Keys: A–E select • Enter submit • ←/→ move</span>
+            <span id="key-hint" class="text-[11px] text-slate-500 hidden sm:inline">Keys: A–E select • Enter submit • ←/→ move</span>
           </div>
 
           <div id="options-container" class="space-y-2.5 mb-6"></div>
 
           <div class="flex items-center justify-between gap-3 pt-4 border-t border-slate-800">
-            <button onclick="prevQuestion()" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold transition">
+            <button onclick="prevQuestion()" id="prev-btn" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold transition">
               ← Previous
             </button>
             <button onclick="submitAnswer()" id="submit-btn" class="flex-1 py-2.5 px-5 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-semibold text-sm shadow-lg shadow-indigo-600/25 transition">
               Submit & Reveal Rationale + Mnemonic
             </button>
-            <button onclick="nextQuestion()" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold transition">
+            <button onclick="nextQuestion()" id="next-btn" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold transition">
               Next →
             </button>
           </div>
         </div>
 
         <!-- Right Column: Simultaneous Rationale, Mnemonic & Bedside Teaching -->
-        <div class="lg:col-span-6 space-y-5">
+        <div id="rationale-col" class="lg:col-span-6 space-y-5">
           
           <!-- Locked Placeholder before Submission -->
           <div id="rationale-locked" class="bg-slate-900/70 border border-dashed border-slate-800 rounded-2xl p-8 text-center">
@@ -1038,6 +1227,8 @@
       </section>
 
       <!-- VIEW 5: TEST-TAKING STRATEGIES -->
+      <section id="view-cat" class="hidden"><div id="cat-root" class="cat"></div></section>
+
       <section id="view-strategies" class="hidden st">
         <div class="st-hero">
           <p class="st-eyebrow">Test-taking strategies</p>
@@ -1506,8 +1697,14 @@
       if (!questionsPromise) {
         const BASE_COLS = 'id, category, topic, type, stem, options, correct, mnemonic_title, mnemonic_body, rationale, teaching, option_rationales, fundamentals, client_need, related';
         questionsPromise = sb.from('questions')
-          .select(BASE_COLS + ', bowtie, case_data')
+          .select(BASE_COLS + ', bowtie, case_data, ngn, difficulty')
           .order('id')
+          .then(res => (res.error && /difficulty/i.test(res.error.message || ''))
+            ? sb.from('questions').select(BASE_COLS + ', bowtie, case_data, ngn').order('id')   // difficulty column not added yet
+            : res)
+          .then(res => (res.error && /ngn|column/i.test(res.error.message || ''))
+            ? sb.from('questions').select(BASE_COLS + ', bowtie, case_data').order('id')   // ngn column not added yet
+            : res)
           .then(res => (res.error && /bowtie|case_data|column/i.test(res.error.message || ''))
             ? sb.from('questions').select(BASE_COLS).order('id')   // new columns not added yet
             : res)
@@ -1530,8 +1727,10 @@
               clientNeed: r.client_need || '',
               related: Array.isArray(r.related) ? r.related : [],
               bowtie: (r.type === 'bowtie' && r.bowtie && r.bowtie.answer) ? r.bowtie : null,
-              caseData: (r.case_data && Array.isArray(r.case_data.tabs) && r.case_data.tabs.length) ? r.case_data : null
-            })).filter(q => q.type !== 'bowtie' || q.bowtie);
+              caseData: (r.case_data && Array.isArray(r.case_data.tabs) && r.case_data.tabs.length) ? r.case_data : null,
+              ngn: (r.ngn && typeof r.ngn === 'object') ? r.ngn : null,
+              difficulty: (r.difficulty != null && isFinite(+r.difficulty)) ? +r.difficulty : null
+            })).filter(q => (q.type !== 'bowtie' || q.bowtie) && (!NGN_UI.includes(q.type) || ngnValid(q)) && (q.type !== 'selectn' || (q.ngn && q.ngn.n)));
             QUESTIONS = spreadSpecial(QUESTIONS);
             updateCategoryCounts();
             return QUESTIONS;
@@ -1548,22 +1747,36 @@
         const el = document.getElementById(id);
         if (el) el.classList.toggle('hidden', n(c) === 0);
       });
+      const ng = document.getElementById('cat-NGN');
+      if (ng) ng.classList.toggle('hidden', !QUESTIONS.some(isNgnType));
+      const cs = document.getElementById('cat-CASE');
+      if (cs) cs.classList.toggle('hidden', !QUESTIONS.some(q => q.ngn && q.ngn.case));
     }
 
     // Spread bow-tie and case-study questions evenly through the bank
     function spreadSpecial(list) {
-      const isSpecial = q => q.type === 'bowtie' || !!q.caseData;
+      const isSpecial = q => isNgnType(q) || !!q.caseData;
       const special = list.filter(isSpecial), regular = list.filter(q => !isSpecial(q));
       if (!special.length || !regular.length) return list;
+      // a case study travels as one block of questions, in step order
+      const units = [], caseUnits = {};
+      special.forEach(q => {
+        const c = q.ngn && q.ngn.case;
+        if (c && c.id) {
+          if (!caseUnits[c.id]) { caseUnits[c.id] = { cat: q.category, items: [] }; units.push(caseUnits[c.id]); }
+          caseUnits[c.id].items.push(q);
+        } else units.push({ cat: q.category, items: [q] });
+      });
+      Object.values(caseUnits).forEach(u => u.items.sort((a, b) => (a.ngn.case.step || 0) - (b.ngn.case.step || 0)));
       // alternate categories so the same topic area doesn't come up twice in a row
       const byCat = {};
-      special.forEach(q => (byCat[q.category] = byCat[q.category] || []).push(q));
+      units.forEach(u => (byCat[u.cat] = byCat[u.cat] || []).push(u));
       const mixed = [], cats = Object.keys(byCat);
-      while (mixed.length < special.length) cats.forEach(c => { if (byCat[c].length) mixed.push(byCat[c].shift()); });
+      while (mixed.length < units.length) cats.forEach(c => { if (byCat[c].length) mixed.push(byCat[c].shift()); });
       const step = Math.max(2, Math.floor(regular.length / (mixed.length + 1)));
       const out = []; let s = 0;
-      regular.forEach((q, i) => { out.push(q); if ((i + 1) % step === 0 && s < mixed.length) out.push(mixed[s++]); });
-      while (s < mixed.length) out.push(mixed[s++]);
+      regular.forEach((q, i) => { out.push(q); if ((i + 1) % step === 0 && s < mixed.length) out.push(...mixed[s++].items); });
+      while (s < mixed.length) out.push(...mixed[s++].items);
       return out;
     }
 
@@ -1635,7 +1848,7 @@
     const CAT_BUTTON_IDS = {
       'ALL': 'cat-ALL', 'Med-Surg': 'cat-Med-Surg', 'Pharmacology': 'cat-Pharmacology',
       'OB & Peds': 'cat-OB', 'Pediatrics': 'cat-Peds', 'Prioritization & Fundamentals': 'cat-Prio', 'Mental Health': 'cat-MH',
-      'FLAGGED': 'cat-FLAGGED', 'MISSED': 'cat-MISSED'
+      'NGN': 'cat-NGN', 'CASE': 'cat-CASE', 'FLAGGED': 'cat-FLAGGED', 'MISSED': 'cat-MISSED'
     };
 
     let activeNeed = 'ALL';
@@ -1653,18 +1866,23 @@
       if (cat === 'ALL') list = [...QUESTIONS];
       else if (cat === 'FLAGGED') list = QUESTIONS.filter(q => userStats.bookmarks.includes(q.id));
       else if (cat === 'MISSED') list = QUESTIONS.filter(q => userStats.answered[q.id] === false);
+      else if (cat === 'NGN') list = QUESTIONS.filter(isNgnType);
+      else if (cat === 'CASE') list = QUESTIONS.filter(q => q.ngn && q.ngn.case);
       else list = QUESTIONS.filter(q => q.category === cat);
       if (activeNeed !== 'ALL') list = list.filter(q => q.clientNeed === activeNeed);
 
       if (list.length === 0) {
         alert(activeNeed !== 'ALL' ? `No questions match "${activeNeed}" in this set yet.`
             : cat === 'FLAGGED' ? 'No flagged questions yet. Use ☆ Flag on any question to save it here.'
+            : cat === 'NGN' ? 'No Next Generation items are available yet.'
+            : cat === 'CASE' ? 'No unfolding case studies are available yet.'
             : 'No missed questions yet. Nice work!');
         return false;
       }
       activeCategory = cat;
       document.querySelectorAll('.cat-btn').forEach(btn => {
-        btn.className = 'cat-btn px-3 py-1 rounded-lg text-xs font-semibold bg-slate-800/70 text-slate-400 hover:text-white border border-slate-700/60';
+        const wasHidden = btn.classList.contains('hidden');
+        btn.className = 'cat-btn px-3 py-1 rounded-lg text-xs font-semibold bg-slate-800/70 text-slate-400 hover:text-white border border-slate-700/60' + (wasHidden ? ' hidden' : '');
       });
       const activeBtn = document.getElementById(CAT_BUTTON_IDS[cat]);
       if (activeBtn) {
@@ -1709,15 +1927,21 @@
       selectedIndices = [];
       struckIndices = [];
       bowSel = { condition: [], actions: [], parameters: [] };
+      ngnSel = ngnInit(q);
       isSubmitted = false;
 
       const jumperEl = document.getElementById('question-jumper');
       if (jumperEl) jumperEl.value = currentIndex;
       document.getElementById('q-number-badge').classList.add('hidden');
       document.getElementById('q-category-badge').textContent = q.category === 'OB & Peds' ? 'Maternal & Newborn' : q.category;
-      document.getElementById('q-type-badge').textContent = q.type === 'bowtie' ? 'NGN Bow-Tie' : q.type === 'sata' ? 'SATA (Select All That Apply)' : 'Single Best Answer';
+      document.getElementById('q-type-badge').textContent = NGN_BADGE[q.type] || (q.type === 'sata' ? 'SATA (Select All That Apply)' : 'Single Best Answer');
       renderCase(q);
-      document.getElementById('q-topic').textContent = q.topic;
+      const hint = document.getElementById('key-hint');
+      if (hint) hint.textContent = (NGN_UI.includes(q.type) || q.type === 'bowtie') ? 'Enter submit • ←/→ move' : 'Keys: A–E select • Enter submit • ←/→ move';
+      const cs = q.ngn && q.ngn.case;
+      document.getElementById('q-topic').textContent = cs
+        ? `Case study · ${cs.title || ''} · Question ${cs.step} of ${cs.steps}${cs.stage ? ' · ' + cs.stage : ''}`
+        : q.topic;
       const needBadge = document.getElementById('q-need-badge');
       needBadge.textContent = q.clientNeed;
       needBadge.classList.toggle('hidden', !q.clientNeed);
@@ -1726,7 +1950,8 @@
       const prev = userStats.answered[q.id];
       const prevNote = prev === true ? ' (You got this right before)' : prev === false ? ' (You missed this before — try again)' : '';
       document.querySelector('#q-instruction span').textContent =
-        (q.type === 'bowtie' ? 'Complete the bow-tie: choose 1 condition, 2 actions and 2 parameters to monitor.'
+        (q.type === 'bowtie' ? 'Drag to complete the bow-tie: 1 condition, 2 actions and 2 parameters to monitor.'
+          : NGN_HOW[q.type] ? NGN_HOW[q.type](q)
           : q.type === 'sata' ? 'Select ALL answers that apply.' : 'Select the best answer below.') + prevNote;
 
       const isBookmarked = userStats.bookmarks.includes(q.id);
@@ -1747,6 +1972,7 @@
       const q = filteredQuestions[currentIndex];
       const container = document.getElementById('options-container');
       if (q.type === 'bowtie') { renderBowtie(); return; }
+      if (NGN_UI.includes(q.type)) { renderNgn(); return; }
 
       container.innerHTML = q.options.map((optText, idx) => {
         const isSelected = selectedIndices.includes(idx);
@@ -1768,7 +1994,7 @@
           borderClass = 'border-indigo-500 bg-indigo-500/15 text-white';
         }
 
-        const shapeClass = q.type === 'sata' ? 'rounded-md' : 'rounded-full';
+        const shapeClass = (q.type === 'sata' || q.type === 'selectn') ? 'rounded-md' : 'rounded-full';
 
         return `
           <div class="flex items-center gap-2">
@@ -1798,9 +2024,13 @@
     function selectOption(idx) {
       if (isSubmitted) return;
       const q = filteredQuestions[currentIndex];
-      if (q.type === 'bowtie') return;
+      if (q.type === 'bowtie' || NGN_UI.includes(q.type)) return;
       struckIndices = struckIndices.filter(i => i !== idx);
-      if (q.type === 'sata') {
+      if (q.type === 'selectn') {
+        if (selectedIndices.includes(idx)) selectedIndices = selectedIndices.filter(i => i !== idx);
+        else if (selectedIndices.length < q.ngn.n) selectedIndices.push(idx);
+        else { selectedIndices.shift(); selectedIndices.push(idx); }
+      } else if (q.type === 'sata') {
         if (selectedIndices.includes(idx)) {
           selectedIndices = selectedIndices.filter(i => i !== idx);
         } else {
@@ -1827,7 +2057,7 @@
         const idx = bowSel[grp][i];
         let cls = 'bt-slot' + (idx != null ? ' filled' : '');
         if (isSubmitted && idx != null) cls += ans[grp].includes(idx) ? ' ok' : ' bad';
-        return `<div class="${cls}">${idx == null ? '<span class="bt-empty">Your choice goes here</span>' : escapeHTML(b[BT_KEY[grp]][idx])}</div>`;
+        return `<div class="${cls}" data-grp="${grp}" ondragover="bowOver(event,'${grp}')" ondragleave="this.classList.remove('over')" ondrop="bowDrop(event,'${grp}',${i})" ${(!isSubmitted && idx != null) ? `onclick="bowClear('${grp}',${i})" title="Tap to remove"` : ''}>${idx == null ? '<span class="bt-empty">Drag a choice here</span>' : escapeHTML(b[BT_KEY[grp]][idx]) + (isSubmitted ? '' : '<span class="bt-x" aria-hidden="true">×</span>')}</div>`;
       };
       const group = (grp, title) => `
         <div class="bt-group"><p class="bt-gh">${title}<span>${bowSel[grp].length}/${BT_LIMIT[grp]}</span></p>
@@ -1835,7 +2065,7 @@
             let c = 'bt-chip';
             if (bowSel[grp].includes(i)) c += ' sel';
             if (isSubmitted) { if (ans[grp].includes(i)) c += ' ok'; else if (bowSel[grp].includes(i)) c += ' bad'; }
-            return `<button type="button" class="${c}" onclick="pickBow('${grp}', ${i})" ${isSubmitted ? 'disabled' : ''}>${escapeHTML(t)}</button>`;
+            return `<button type="button" class="${c}" draggable="${!isSubmitted}" ondragstart="bowDrag(event,'${grp}',${i})" ondragend="document.querySelectorAll('.bt-slot.over').forEach(x=>x.classList.remove('over'))" onclick="pickBow('${grp}', ${i})" ${isSubmitted ? 'disabled' : ''}><span class="bt-grip" aria-hidden="true">⠿</span>${escapeHTML(t)}</button>`;
           }).join('')}</div></div>`;
       document.getElementById('options-container').innerHTML = `
         <div class="bt-wrap">
@@ -1844,12 +2074,40 @@
             <div class="bt-core"><p class="bt-h">Potential condition</p>${slot('condition', 0)}</div>
             <div class="bt-side"><p class="bt-h">Parameters to monitor</p>${slot('parameters', 0)}${slot('parameters', 1)}</div>
           </div>
+          <p class="bt-tip">Drag each choice into the matching part of the bow-tie, or tap it. Tap a filled box to remove it.</p>
           ${group('condition', 'Potential condition · choose 1')}
           ${group('actions', 'Actions to take · choose 2')}
           ${group('parameters', 'Parameters to monitor · choose 2')}
         </div>`;
     }
 
+    let bowDragging = null;
+    function bowDrag(e, grp, i) {
+      bowDragging = { grp, i };
+      try { e.dataTransfer.setData('text/plain', grp + ':' + i); e.dataTransfer.effectAllowed = 'move'; } catch (err) {}
+    }
+    function bowOver(e, grp) {
+      if (isSubmitted || !bowDragging || bowDragging.grp !== grp) return;   // only the matching part of the bow-tie accepts it
+      e.preventDefault();
+      e.currentTarget.classList.add('over');
+    }
+    function bowDrop(e, grp, slotIdx) {
+      e.preventDefault();
+      e.currentTarget.classList.remove('over');
+      if (isSubmitted || !bowDragging || bowDragging.grp !== grp) return;
+      const s = bowSel[grp], i = bowDragging.i;
+      const already = s.indexOf(i);
+      if (already > -1) s.splice(already, 1);
+      if (slotIdx < s.length) s.splice(slotIdx, 1, i); else s.push(i);
+      while (s.length > BT_LIMIT[grp]) s.shift();
+      bowDragging = null;
+      renderBowtie();
+    }
+    function bowClear(grp, slotIdx) {
+      if (isSubmitted) return;
+      bowSel[grp].splice(slotIdx, 1);
+      renderBowtie();
+    }
     function pickBow(grp, i) {
       if (isSubmitted) return;
       const s = bowSel[grp], at = s.indexOf(i);
@@ -1867,16 +2125,558 @@
       const box = document.getElementById('q-case');
       if (!q.caseData) { box.classList.add('hidden'); box.innerHTML = ''; return; }
       const tabs = q.caseData.tabs;
+      const cs = q.ngn && q.ngn.case;
+      const tableHTML = t => `<div class="case-table"><table>${t.table.map((row, r) => `<tr>${row.map(c => r === 0 ? `<th>${escapeHTML(String(c))}</th>` : `<td>${escapeHTML(String(c))}</td>`).join('')}</tr>`).join('')}</table></div>`;
+      const steps = cs ? `<div class="case-steps">${Array.from({ length: cs.steps || 6 }, (_, i) => `<span class="${i + 1 < cs.step ? 'done' : i + 1 === cs.step ? 'now' : ''}" title="Question ${i + 1}">${i + 1}</span>`).join('')}<em>${escapeHTML(cs.stage || '')}</em></div>` : '';
       box.classList.remove('hidden');
-      box.innerHTML = `
-        <div class="case-head"><span>📋 Case study</span>
+      box.innerHTML = steps + `
+        <div class="case-head"><span>📋 ${cs ? escapeHTML(cs.title || 'Case study') : 'Case study'}</span>
           <div class="case-tabs">${tabs.map((t, i) => `<button type="button" class="case-tab${i === 0 ? ' on' : ''}" onclick="showCaseTab(${i})">${escapeHTML(t.label || 'Info')}</button>`).join('')}</div>
         </div>
-        ${tabs.map((t, i) => `<div class="case-body${i === 0 ? '' : ' hidden'}">${escapeHTML(t.body || '')}</div>`).join('')}`;
+        ${tabs.map((t, i) => `<div class="case-body${i === 0 ? '' : ' hidden'}">${Array.isArray(t.table) ? tableHTML(t) : escapeHTML(t.body || '')}</div>`).join('')}`;
     }
     function showCaseTab(i) {
       document.querySelectorAll('#q-case .case-tab').forEach((b, j) => b.classList.toggle('on', i === j));
       document.querySelectorAll('#q-case .case-body').forEach((d, j) => d.classList.toggle('hidden', i !== j));
+    }
+
+
+    // ============================================================================
+    // NGN ITEM FORMATS: matrix, drop-down cloze, highlight, drag & drop,
+    // ordered response, select N, calculation (+ unfolding case studies)
+    // ============================================================================
+    const NGN_UI = ['matrix', 'cloze', 'highlight', 'dragdrop', 'order', 'calc'];
+    const NGN_ALL = ['bowtie', 'selectn', ...NGN_UI];
+    const isNgnType = q => NGN_ALL.includes(q.type);
+    const NGN_BADGE = { bowtie: 'NGN Bow-Tie', matrix: 'NGN Matrix', cloze: 'NGN Drop-Down', highlight: 'NGN Highlight',
+      dragdrop: 'NGN Drag & Drop', order: 'NGN Ordered Response', selectn: 'NGN Select N', calc: 'NGN Calculation' };
+    const NGN_HOW = {
+      matrix: () => 'Select one option in each row.',
+      cloze: () => 'Choose an option from each drop-down to complete the sentence.',
+      highlight: () => 'Click or tap the findings to highlight them. Click again to remove.',
+      dragdrop: () => 'Drag each item into a column, or tap an item and then tap a column.',
+      order: () => 'Put the steps in order, first at the top. Drag them or use the ▲ ▼ arrows.',
+      selectn: q => `Select exactly ${q.ngn.n} answers.`,
+      calc: q => `Type your answer as a number${q.ngn.unit ? ' in ' + q.ngn.unit : ''}.`
+    };
+    const NGN_PARTIAL_NOTE = {
+      matrix: 'Each row earns a point. Review every row below.',
+      cloze: 'Each drop-down earns a point. Review every choice below.',
+      highlight: 'Each correct highlight earns a point and each wrong one takes a point away.',
+      dragdrop: 'Each item placed in the right column earns a point.',
+      selectn: 'Each correct choice earns a point.',
+      bowtie: 'Each correct slot earns a point. Review every slot below.'
+    };
+    let ngnSel = {};
+
+    function ngnValid(q) {
+      const n = q.ngn;
+      if (!n) return false;
+      return q.type === 'matrix' ? Array.isArray(n.columns) && Array.isArray(n.rows)
+        : q.type === 'cloze' ? typeof n.template === 'string' && Array.isArray(n.blanks)
+        : q.type === 'highlight' ? Array.isArray(n.segments)
+        : q.type === 'dragdrop' ? Array.isArray(n.categories) && Array.isArray(n.items)
+        : q.type === 'order' ? Array.isArray(n.items)
+        : q.type === 'calc' ? typeof n.answer === 'number' : false;
+    }
+    function ngnInit(q) {
+      const st = { m: {}, c: {}, h: [], d: {}, v: '', pick: null };
+      if (q.type === 'order' && q.ngn) {
+        const st0 = Array.isArray(q.ngn.start) && q.ngn.start.length === q.ngn.items.length ? q.ngn.start : q.ngn.items.map((_, i) => i).reverse();
+        st.o = [...st0];
+      }
+      return st;
+    }
+    function ngnKey(q) {
+      const n = q.ngn, st = ngnInit(q);
+      if (q.type === 'matrix') n.rows.forEach((r, i) => st.m[i] = r.answer);
+      if (q.type === 'cloze') n.blanks.forEach((b, i) => st.c[i] = b.answer);
+      if (q.type === 'highlight') st.h = n.segments.map((x, i) => x.key ? i : -1).filter(i => i > -1);
+      if (q.type === 'dragdrop') n.items.forEach((it, i) => st.d[i] = it.answer);
+      if (q.type === 'order') st.o = n.items.map((_, i) => i);
+      if (q.type === 'calc') st.v = String(n.answer);
+      return st;
+    }
+    function ngnMissing(q) {
+      const n = q.ngn;
+      if (q.type === 'selectn') return selectedIndices.length === n.n ? '' : `Select exactly ${n.n} answers (you have ${selectedIndices.length}).`;
+      if (q.type === 'matrix') return Object.keys(ngnSel.m).length === n.rows.length ? '' : 'Choose an answer in every row first.';
+      if (q.type === 'cloze') return Object.keys(ngnSel.c).length === n.blanks.length ? '' : 'Choose an option from every drop-down first.';
+      if (q.type === 'highlight') return ngnSel.h.length ? '' : 'Highlight at least one finding first.';
+      if (q.type === 'dragdrop') return Object.keys(ngnSel.d).length === n.items.length ? '' : 'Place every item in a column first.';
+      if (q.type === 'calc') return ngnNum(ngnSel.v) == null ? 'Type your answer as a number first.' : '';
+      return '';
+    }
+    function ngnNum(v) { const x = parseFloat(String(v).replace(/,/g, '').trim()); return isFinite(x) ? x : null; }
+    function ngnCalcOk(q) {
+      const x = ngnNum(ngnSel.v), n = q.ngn;
+      return x != null && Math.abs(x - n.answer) <= (n.tolerance != null ? n.tolerance : 0.001) + 1e-9;
+    }
+    function ngnScore(q) {
+      const n = q.ngn;
+      if (q.type === 'selectn') return { pts: selectedIndices.filter(i => q.correct.includes(i)).length, max: n.n };
+      if (q.type === 'matrix') return { pts: n.rows.filter((r, i) => ngnSel.m[i] === r.answer).length, max: n.rows.length };
+      if (q.type === 'cloze') return { pts: n.blanks.filter((b, i) => ngnSel.c[i] === b.answer).length, max: n.blanks.length };
+      if (q.type === 'highlight') {
+        const max = n.segments.filter(x => x.key).length;
+        const raw = ngnSel.h.reduce((t, i) => t + (n.segments[i].key ? 1 : -1), 0);
+        return { pts: Math.max(0, raw), max };
+      }
+      if (q.type === 'dragdrop') return { pts: n.items.filter((it, i) => ngnSel.d[i] === it.answer).length, max: n.items.length };
+      if (q.type === 'order') return { pts: ngnSel.o.every((v, i) => v === i) ? 1 : 0, max: 1 };
+      if (q.type === 'calc') return { pts: ngnCalcOk(q) ? 1 : 0, max: 1 };
+      return { pts: 0, max: 1 };
+    }
+
+    function renderNgn() {
+      const q = filteredQuestions[currentIndex], n = q.ngn, box = document.getElementById('options-container');
+      const lock = isSubmitted ? 'disabled' : '';
+      let html = '';
+      if (q.type === 'matrix') {
+        html = `<div class="ngn-mx-wrap"><table class="ngn-mx"><thead><tr><th></th>${n.columns.map(c => `<th>${escapeHTML(c)}</th>`).join('')}</tr></thead><tbody>` +
+          n.rows.map((r, i) => `<tr><td class="ngn-mx-row">${escapeHTML(r.text)}</td>${n.columns.map((c, j) => {
+            const on = ngnSel.m[i] === j;
+            let cls = 'ngn-cell' + (on ? ' on' : '');
+            if (isSubmitted) cls += r.answer === j ? ' key' : (on ? ' bad' : '');
+            return `<td><button type="button" class="ngn-opt" onclick="ngnMatrix(${i},${j})" aria-label="${escapeHTML(c)}" aria-pressed="${on}" ${lock}><span class="${cls}"><span></span></span><span class="ngn-cell-lbl">${escapeHTML(c)}</span></button></td>`;
+          }).join('')}</tr>`).join('') + `</tbody></table></div>`;
+      } else if (q.type === 'cloze') {
+        const parts = n.template.split(/\{(\d+)\}/);
+        html = `<div class="ngn-cloze">` + parts.map((p, k) => {
+          if (k % 2 === 0) return escapeHTML(p);
+          const i = +p, b = n.blanks[i], v = ngnSel.c[i];
+          let cls = 'ngn-dd' + (v != null ? ' on' : '');
+          if (isSubmitted) cls += v === b.answer ? ' ok' : ' bad';
+          return `<select class="${cls}" onchange="ngnCloze(${i}, this.value)" ${lock} aria-label="Drop-down ${i + 1}">
+            <option value="" ${v == null ? 'selected' : ''} disabled>Select…</option>
+            ${b.options.map((o, j) => `<option value="${j}" ${v === j ? 'selected' : ''}>${escapeHTML(o)}</option>`).join('')}</select>`;
+        }).join('') + `</div>`;
+        if (isSubmitted) html += `<div class="ngn-key-line">Answer: ${ngnClozeText(q, true)}</div>`;
+      } else if (q.type === 'highlight') {
+        html = `<div class="ngn-hl"><div class="ngn-hl-h">📝 Nurse's notes</div><p>` + n.segments.map((x, i) => {
+          if (x.plain) return `<span class="ngn-plain">${escapeHTML(x.t)}</span> `;
+          const on = ngnSel.h.includes(i);
+          let cls = 'ngn-seg' + (on ? ' on' : '');
+          if (isSubmitted) cls += x.key ? (on ? ' ok' : ' miss') : (on ? ' bad' : '');
+          return `<button type="button" class="${cls}" onclick="ngnHl(${i})" aria-pressed="${on}" ${lock}>${escapeHTML(x.t)}</button> `;
+        }).join('') + `</p></div>`;
+      } else if (q.type === 'dragdrop') {
+        const chip = i => {
+          const it = n.items[i], placed = ngnSel.d[i];
+          let cls = 'ngn-chip' + (ngnSel.pick === i ? ' pick' : '');
+          if (isSubmitted) cls += placed === it.answer ? ' ok' : ' bad';
+          return `<button type="button" class="${cls}" draggable="${!isSubmitted}" ondragstart="ngnDrag(event,${i})" onclick="ngnChip(${i})" ${lock}><span class="bt-grip" aria-hidden="true">⠿</span>${escapeHTML(it.text)}${isSubmitted && placed !== it.answer ? `<em>→ ${escapeHTML(n.categories[it.answer])}</em>` : ''}</button>`;
+        };
+        const pool = n.items.map((_, i) => i).filter(i => ngnSel.d[i] == null);
+        html = `<div class="ngn-pool${pool.length ? '' : ' empty'}" ondragover="ngnOver(event)" ondragleave="this.classList.remove('over')" ondrop="ngnDrop(event,-1)" onclick="if(event.target===this)ngnZone(-1)">
+            ${pool.length ? pool.map(chip).join('') : `<span class="bt-empty">${isSubmitted ? '' : 'All items placed. Tap an item to move it.'}</span>`}</div>
+          <div class="ngn-zones" style="--cols:${n.categories.length}">${n.categories.map((c, ci) => `
+            <div class="ngn-zone${ngnSel.pick != null && !isSubmitted ? ' ready' : ''}" ondragover="ngnOver(event)" ondragleave="this.classList.remove('over')" ondrop="ngnDrop(event,${ci})" onclick="if(!event.target.closest('.ngn-chip'))ngnZone(${ci})">
+              <div class="ngn-zone-h">${escapeHTML(c)}</div>
+              ${n.items.map((_, i) => i).filter(i => ngnSel.d[i] === ci).map(chip).join('') || '<span class="bt-empty">Drop here</span>'}
+            </div>`).join('')}</div>`;
+      } else if (q.type === 'order') {
+        html = `<ol class="ngn-order">` + ngnSel.o.map((it, pos) => {
+          let cls = 'ngn-row';
+          if (isSubmitted) cls += it === pos ? ' ok' : ' bad';
+          return `<li class="${cls}" draggable="${!isSubmitted}" ondragstart="ngnDrag(event,${pos})" ondragover="ngnOver(event)" ondragleave="this.classList.remove('over')" ondrop="ngnDropOrder(event,${pos})">
+            <span class="ngn-pos">${pos + 1}</span><span class="ngn-txt">${escapeHTML(n.items[it])}${isSubmitted && it !== pos ? `<em>Belongs in step ${it + 1}</em>` : ''}</span>
+            <span class="ngn-arrows"><button type="button" onclick="ngnMove(${pos},-1)" ${lock || (pos === 0 ? 'disabled' : '')} aria-label="Move up">▲</button><button type="button" onclick="ngnMove(${pos},1)" ${lock || (pos === ngnSel.o.length - 1 ? 'disabled' : '')} aria-label="Move down">▼</button></span></li>`;
+        }).join('') + `</ol>`;
+      } else if (q.type === 'calc') {
+        let cls = 'ngn-calc';
+        if (isSubmitted) cls += ngnCalcOk(q) ? ' ok' : ' bad';
+        html = `<div class="${cls}"><label>Answer <input id="ngn-calc-in" type="text" inputmode="decimal" autocomplete="off" value="${escapeHTML(ngnSel.v)}" oninput="ngnSel.v=this.value" onkeydown="if(event.key==='Enter'){event.preventDefault();submitAnswer();}" ${lock} placeholder="0"></label><span class="ngn-unit">${escapeHTML(n.unit || '')}</span></div>
+          ${isSubmitted ? `<div class="ngn-key-line">Correct answer: <b>${ngnFmt(n.answer, n.decimals)} ${escapeHTML(n.unit || '')}</b>${n.working ? `<br><span>${escapeHTML(n.working)}</span>` : ''}</div>` : ''}`;
+      }
+      box.innerHTML = html;
+    }
+    function ngnFmt(x, d) { return d != null ? Number(x).toFixed(d) : String(x); }
+    function ngnClozeText(q, key) {
+      const n = q.ngn;
+      return escapeHTML(n.template).replace(/\{(\d+)\}/g, (_, i) => {
+        const b = n.blanks[+i], v = key ? b.answer : ngnSel.c[+i];
+        return `<b>${v != null ? escapeHTML(b.options[v]) : '___'}</b>`;
+      });
+    }
+    function ngnMatrix(i, j) { if (isSubmitted) return; ngnSel.m[i] = j; renderNgn(); }
+    function ngnCloze(i, v) { if (isSubmitted) return; ngnSel.c[i] = +v; renderNgn(); }
+    function ngnHl(i) {
+      if (isSubmitted) return;
+      const at = ngnSel.h.indexOf(i);
+      at > -1 ? ngnSel.h.splice(at, 1) : ngnSel.h.push(i);
+      renderNgn();
+    }
+    let ngnDragging = null;
+    function ngnDrag(e, i) {
+      ngnDragging = i;
+      try { e.dataTransfer.setData('text/plain', String(i)); e.dataTransfer.effectAllowed = 'move'; } catch (err) {}
+    }
+    function ngnOver(e) { if (isSubmitted || ngnDragging == null) return; e.preventDefault(); e.currentTarget.classList.add('over'); }
+    function ngnDrop(e, ci) {
+      e.preventDefault(); e.currentTarget.classList.remove('over');
+      if (isSubmitted || ngnDragging == null) return;
+      ngnPlace(ngnDragging, ci); ngnDragging = null;
+    }
+    function ngnPlace(i, ci) { if (ci < 0) delete ngnSel.d[i]; else ngnSel.d[i] = ci; ngnSel.pick = null; renderNgn(); }
+    function ngnChip(i) { if (isSubmitted) return; ngnSel.pick = ngnSel.pick === i ? null : i; renderNgn(); }
+    function ngnZone(ci) { if (isSubmitted || ngnSel.pick == null) return; ngnPlace(ngnSel.pick, ci); }
+    function ngnMove(pos, dir) {
+      if (isSubmitted) return;
+      const o = ngnSel.o, to = pos + dir;
+      if (to < 0 || to >= o.length) return;
+      [o[pos], o[to]] = [o[to], o[pos]];
+      renderNgn();
+    }
+    function ngnDropOrder(e, to) {
+      e.preventDefault(); e.currentTarget.classList.remove('over');
+      if (isSubmitted || ngnDragging == null) return;
+      const o = ngnSel.o, [it] = o.splice(ngnDragging, 1);
+      o.splice(to, 0, it); ngnDragging = null;
+      renderNgn();
+    }
+
+    function ngnRationale(q, isPeek) {
+      const n = q.ngn, why = n.why || [];
+      const card = (ok, head, body, picked) => `<div class="p-3 rounded-xl ${ok ? 'bg-emerald-950/30 border border-emerald-500/40 text-emerald-100' : 'bg-slate-950/70 border border-slate-800 text-slate-400'}">
+          <div><span class="font-bold ${ok ? 'text-emerald-300' : 'text-rose-300/90'}">${head}${picked && !isPeek ? ' • ' + picked : ''}</span></div>
+          ${body ? `<div class="mt-1.5 text-[12px] leading-relaxed ${ok ? 'text-emerald-100/90' : 'text-slate-300'}">${body}</div>` : ''}</div>`;
+      let answer = '', tip = '', list = '';
+      if (q.type === 'matrix') {
+        answer = n.rows.map(r => `${escapeHTML(r.text)} → <b>${escapeHTML(n.columns[r.answer])}</b>`).join('<br>');
+        tip = 'Treat each row as its own true/false question. One row never depends on another.';
+        list = n.rows.map((r, i) => {
+          const ok = ngnSel.m[i] === r.answer;
+          return card(isPeek || ok, `${isPeek ? '' : ok ? '✓ ' : '✗ '}${escapeHTML(r.text)} → ${escapeHTML(n.columns[r.answer])}`, escapeHTML(why[i] || ''),
+            !ok && ngnSel.m[i] != null ? `you chose ${escapeHTML(n.columns[ngnSel.m[i]])}` : '');
+        }).join('');
+      } else if (q.type === 'cloze') {
+        answer = ngnClozeText(q, true);
+        tip = 'Read the whole sentence first. The blanks have to agree with each other and with the case data.';
+        list = n.blanks.map((b, i) => {
+          const ok = ngnSel.c[i] === b.answer;
+          return card(isPeek || ok, `${isPeek ? '' : ok ? '✓ ' : '✗ '}Drop-down ${i + 1}: ${escapeHTML(b.options[b.answer])}`, escapeHTML(why[i] || ''),
+            !ok && ngnSel.c[i] != null ? `you chose "${escapeHTML(b.options[ngnSel.c[i]])}"` : '');
+        }).join('');
+      } else if (q.type === 'highlight') {
+        answer = n.segments.filter(x => x.key).map(x => escapeHTML(x.t)).join('<br>');
+        tip = 'Highlight only what needs follow-up. Expected or normal findings cost you a point if you pick them.';
+        list = n.segments.map((x, i) => {
+          if (x.plain) return '';
+          const on = ngnSel.h.includes(i);
+          const head = x.key ? `${!isPeek && !on ? '✗ Missed: ' : '✓ Highlight: '}${escapeHTML(x.t)}` : `${on && !isPeek ? '✗ Not a cue: ' : 'Leave: '}${escapeHTML(x.t)}`;
+          return card(x.key && (isPeek || on), head, escapeHTML(x.why || ''), on ? 'you highlighted this' : '');
+        }).join('');
+      } else if (q.type === 'dragdrop') {
+        answer = n.categories.map((c, ci) => `<b>${escapeHTML(c)}:</b> ${n.items.filter(it => it.answer === ci).map(it => escapeHTML(it.text)).join('; ')}`).join('<br>');
+        tip = 'Sort each item on its own merits: who is allowed to do it, or where it truly belongs.';
+        list = n.items.map((it, i) => {
+          const ok = ngnSel.d[i] === it.answer;
+          return card(isPeek || ok, `${isPeek ? '' : ok ? '✓ ' : '✗ '}${escapeHTML(it.text)} → ${escapeHTML(n.categories[it.answer])}`, escapeHTML(why[i] || ''),
+            !ok && ngnSel.d[i] != null ? `you placed it in ${escapeHTML(n.categories[ngnSel.d[i]])}` : '');
+        }).join('');
+      } else if (q.type === 'order') {
+        answer = n.items.map((t, i) => `${i + 1}. ${escapeHTML(t)}`).join('<br>');
+        tip = 'Ordered response is all-or-nothing. Ask: what helps the client fastest, and what must happen before the next step can?';
+        list = n.items.map((t, i) => {
+          const ok = ngnSel.o[i] === i;
+          return card(isPeek || ok, `${isPeek ? '' : ok ? '✓ ' : '✗ '}Step ${i + 1}: ${escapeHTML(t)}`, escapeHTML(why[i] || ''), !ok ? `you put "${escapeHTML(n.items[ngnSel.o[i]])}" here` : '');
+        }).join('');
+      } else if (q.type === 'calc') {
+        answer = `${ngnFmt(n.answer, n.decimals)} ${escapeHTML(n.unit || '')}`;
+        tip = 'Write the formula, cancel units, and round only at the very end, the way the question asks.';
+        list = card(true, `Working`, escapeHTML(n.working || ''), !isPeek && !ngnCalcOk(q) ? `you entered ${escapeHTML(ngnSel.v)}` : '');
+      }
+      document.getElementById('rationale-framework').innerHTML = `
+        <div><strong class="text-indigo-300">🎯 Correct answer:</strong><div class="mt-1">${answer}</div></div>
+        <div><strong class="text-emerald-300">🧠 ${NGN_BADGE[q.type]} strategy:</strong> ${tip}</div>`;
+      document.getElementById('rationale-options').innerHTML = list;
+    }
+
+
+    // ============================================================================
+    // ADAPTIVE EXAM (CAT): 85–150 questions, 5 hours, stops at 95% confidence
+    // ============================================================================
+    const CAT_MIN = 85, CAT_MAX = 150, CAT_TIME_MS = 5 * 60 * 60 * 1000, CAT_CUT = 0;   // passing standard on the ability (logit) scale
+    const CAT_HISTORY_KEY = 'ngn_cat_history_v1';
+    const CAT_PLAN = { 'Management of Care': 18, 'Safety and Infection Control': 13, 'Health Promotion and Maintenance': 9, 'Psychosocial Integrity': 9,
+      'Basic Care and Comfort': 9, 'Pharmacological and Parenteral Therapies': 16, 'Reduction of Risk Potential': 12, 'Physiological Adaptation': 14 };
+    const CAT_TYPE_D = { single: 0, sata: 0.5, selectn: 0.4, matrix: 0.3, cloze: 0.2, highlight: 0.4, dragdrop: 0.3, order: 0.6, calc: 0.2, bowtie: 0.6 };
+    let catMode = false, cat = null, catTimer = null, catShowingReport = false, catLast = null;
+
+    // Item difficulty: uses the "difficulty" column when set (-3 easy … +3 hard); otherwise a stable estimate
+    function catB(q) {
+      if (q.difficulty != null) return Math.max(-3, Math.min(3, q.difficulty));
+      let h = 0; const k = String(q.id) + q.topic;
+      for (let i = 0; i < k.length; i++) h = (h * 31 + k.charCodeAt(i)) >>> 0;
+      return (CAT_TYPE_D[q.type] || 0) + ((h % 1000) / 1000 - 0.5) * 2.4;
+    }
+    function catPhi(z) {   // standard normal CDF
+      const t = 1 / (1 + 0.2316419 * Math.abs(z));
+      const d = 0.3989423 * Math.exp(-z * z / 2);
+      const p = d * t * (0.3193815 + t * (-0.3565638 + t * (1.781478 + t * (-1.821256 + t * 1.330274))));
+      return z > 0 ? 1 - p : p;
+    }
+    function catLoadHistory() { try { return JSON.parse(localStorage.getItem(CAT_HISTORY_KEY) || '[]'); } catch (e) { return []; } }
+    function catSaveHistory(h) { try { localStorage.setItem(CAT_HISTORY_KEY, JSON.stringify(h.slice(-20))); } catch (e) {} }
+
+    // Score for one response, 0–1 (partial credit like the NGN)
+    function catFrac(q) {
+      if (q.type === 'bowtie') return bowScore(q) / 5;
+      if (NGN_UI.includes(q.type) || q.type === 'selectn') { const sc = ngnScore(q); return sc.max ? sc.pts / sc.max : 0; }
+      if (q.type === 'sata') {
+        const hit = selectedIndices.filter(i => q.correct.includes(i)).length, miss = selectedIndices.length - hit;
+        return Math.max(0, Math.min(1, (hit - miss) / (q.correct.length || 1)));
+      }
+      return (selectedIndices.length === 1 && q.correct.includes(selectedIndices[0])) ? 1 : 0;
+    }
+    // Ability estimate (Rasch model, MAP with a weak prior) and its standard error
+    function catEstimate() {
+      let th = cat.theta || 0;
+      for (let it = 0; it < 30; it++) {
+        let g = -th / 4, h = -1 / 4;
+        cat.b.forEach((b, i) => { const P = 1 / (1 + Math.exp(b - th)); g += cat.s[i] - P; h -= P * (1 - P); });
+        const step = g / h;
+        th = Math.max(-4, Math.min(4, th - step));
+        if (Math.abs(step) < 1e-4) break;
+      }
+      let info = 0;
+      cat.b.forEach(b => { const P = 1 / (1 + Math.exp(b - th)); info += P * (1 - P); });
+      cat.theta = th;
+      cat.se = 1 / Math.sqrt(Math.max(info, 0.01));
+    }
+
+    function catPick() {
+      while (cat.queue.length) { const q = cat.queue.shift(); if (!cat.used.has(q.id)) return q; }
+      const left = cat.max - cat.items.length;
+      const caseFirst = {};
+      QUESTIONS.forEach(q => { const c = q.ngn && q.ngn.case; if (c && !cat.used.has(q.id)) caseFirst[c.id] = Math.min(caseFirst[c.id] || 99, c.step || 1); });
+      const avail = QUESTIONS.filter(q => {
+        if (cat.used.has(q.id)) return false;
+        const c = q.ngn && q.ngn.case;
+        if (!c) return true;
+        const rest = QUESTIONS.filter(x => x.ngn && x.ngn.case && x.ngn.case.id === c.id && !cat.used.has(x.id)).length;
+        return (c.step || 1) === caseFirst[c.id] && rest <= left;   // start case studies at step 1 and only if they fit
+      });
+      if (!avail.length) return null;
+      // content balance: serve the client-need area furthest behind its NCLEX test-plan share
+      const n = cat.items.length + 1, count = {};
+      cat.items.forEach(q => { count[q.clientNeed] = (count[q.clientNeed] || 0) + 1; });
+      let need = null, best = -Infinity;
+      Object.keys(CAT_PLAN).forEach(k => {
+        if (!avail.some(q => q.clientNeed === k)) return;
+        const gap = CAT_PLAN[k] / 100 * n - (count[k] || 0);
+        if (gap > best) { best = gap; need = k; }
+      });
+      const pool = need ? avail.filter(q => q.clientNeed === need) : avail;
+      // closest difficulty to the current ability estimate, a little randomness among the best 3
+      const ranked = pool.map(q => ({ q, d: Math.abs(catB(q) - cat.theta) })).sort((a, b) => a.d - b.d).slice(0, 3);
+      const q = ranked[Math.floor(Math.random() * ranked.length)].q;
+      const c = q.ngn && q.ngn.case;
+      if (c) cat.queue = QUESTIONS.filter(x => x !== q && x.ngn && x.ngn.case && x.ngn.case.id === c.id && !cat.used.has(x.id))
+        .sort((a, b) => a.ngn.case.step - b.ngn.case.step);
+      return q;
+    }
+
+    function catStart() {
+      if (!QUESTIONS.length) { alert('Questions are still loading. Try again in a moment.'); return; }
+      const max = Math.min(CAT_MAX, QUESTIONS.length);
+      cat = { items: [], s: [], b: [], hist: [], theta: 0, se: Infinity, queue: [], used: new Set(),
+        max, min: Math.min(CAT_MIN, max), start: Date.now() };
+      catMode = true; catShowingReport = false;
+      document.body.classList.add('cat-on');
+      document.getElementById('submit-btn').textContent = 'Submit answer';
+      switchTab('simulator');
+      clearInterval(catTimer);
+      catTimer = setInterval(catTick, 1000); catTick();
+      catNext();
+    }
+    function catTick() {
+      if (!catMode) return;
+      const left = Math.max(0, CAT_TIME_MS - (Date.now() - cat.start));
+      const h = Math.floor(left / 3600000), m = Math.floor(left / 60000) % 60, sec = Math.floor(left / 1000) % 60;
+      document.getElementById('cat-clock').textContent = `⏱ ${h}:${String(m).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
+      if (left <= 0) catFinish('time');
+    }
+    function catNext() {
+      const q = catPick();
+      if (!q) { catFinish('bank'); return; }
+      cat.used.add(q.id);
+      filteredQuestions = [q];
+      currentIndex = 0;
+      renderCurrentQuestion();
+      // exam conditions: no topic hints or "you got this before" notes
+      const cs = q.ngn && q.ngn.case;
+      document.getElementById('q-topic').textContent = cs ? `Case study · Question ${cs.step} of ${cs.steps}` : '';
+      const ins = document.querySelector('#q-instruction span');
+      ins.textContent = ins.textContent.replace(/ \(You (got|missed)[^)]*\)$/, '');
+      document.getElementById('cat-qnum').textContent = `Question ${cat.items.length + 1}`;
+      window.scrollTo({ top: 0 });
+    }
+    function catRecord(q) {
+      cat.items.push(q); cat.s.push(catFrac(q)); cat.b.push(catB(q));
+      catEstimate();
+      cat.hist.push({ t: cat.theta, se: cat.se });
+      const n = cat.items.length;
+      if (n >= cat.min && Math.abs(cat.theta - CAT_CUT) >= 1.96 * cat.se) return catFinish(cat.theta > CAT_CUT ? 'above' : 'below');
+      if (n >= cat.max) return catFinish('max');
+      catNext();
+    }
+    function catEndEarly() {
+      if (!catMode) return;
+      if (!confirm('End the adaptive exam now? Your report will be marked incomplete if you stop before the minimum.')) return;
+      catFinish(cat.items.length >= cat.min ? 'quit-late' : 'quit');
+    }
+
+    function catBandOf(p) {
+      return p >= 0.8 ? { key: 'above', label: 'Above average', chance: p >= 0.95 ? 'Very high' : 'High' }
+        : p >= 0.4 ? { key: 'avg', label: 'Average', chance: 'Borderline' }
+        : { key: 'below', label: 'Below average', chance: 'Low' };
+    }
+    function catFinish(reason) {
+      if (!catMode) return;
+      catMode = false;
+      clearInterval(catTimer);
+      document.body.classList.remove('cat-on');
+      document.getElementById('submit-btn').textContent = 'Submit & Reveal Rationale + Mnemonic';
+      const n = cat.items.length;
+      let p = n ? catPhi((cat.theta - CAT_CUT) / cat.se) : 0;
+      if (reason === 'time' && n < cat.min) p = Math.min(p, 0.05);   // like the NCLEX: not reaching the minimum in time = not passing
+      p = Math.max(0.01, Math.min(0.99, p));
+      const complete = !(reason === 'quit' || (reason === 'time' && n < cat.min)) && n > 0;
+      const group = key => {
+        const g = {};
+        cat.items.forEach((q, i) => { const k = key(q) || 'Other'; g[k] = g[k] || { s: 0, n: 0 }; g[k].s += cat.s[i]; g[k].n++; });
+        return g;
+      };
+      const res = {
+        date: Date.now(), n, theta: cat.theta, se: isFinite(cat.se) ? cat.se : 9, p, reason, complete,
+        ms: Date.now() - cat.start, band: catBandOf(p).key,
+        needs: group(q => q.clientNeed), cats: group(q => q.category === 'OB & Peds' ? 'Maternal & Newborn' : q.category),
+        fmt: group(q => isNgnType(q) ? 'Next Generation (NGN) items' : 'Multiple choice & SATA'),
+        hist: cat.hist.map(h => Math.round(h.t * 100) / 100), ids: cat.items.map(q => q.id), scores: cat.s.slice()
+      };
+      if (n > 0) { const h = catLoadHistory(); h.push({ date: res.date, n, theta: res.theta, se: res.se, p, band: res.band, complete }); catSaveHistory(h); }
+      catLast = res; catShowingReport = true;
+      setCategory('ALL');
+      switchTab('cat');
+      renderCatReport(res);
+    }
+
+    function catFmtTime(ms) { const m = Math.round(ms / 60000); return m >= 60 ? `${Math.floor(m / 60)} h ${m % 60} min` : `${m} min`; }
+    function catHistoryHTML() {
+      const h = catLoadHistory().slice(-8).reverse();
+      if (!h.length) return '';
+      return `<div class="cat-card"><h3>Your adaptive exams</h3><div class="cat-hist">${h.map(x => {
+        const b = catBandOf(x.p);
+        return `<div class="cat-hrow"><span>${new Date(x.date).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}</span><span>${x.n} questions</span>
+          <span class="cat-tag ${x.complete ? b.key : 'inc'}">${x.complete ? b.label : 'Incomplete'}</span><b>${x.complete ? Math.round(x.p * 100) + '%' : '—'}</b></div>`;
+      }).join('')}</div></div>`;
+    }
+    // Consistency across the last 3 complete exams
+    function catConsistency() {
+      const h = catLoadHistory().filter(x => x.complete).slice(-3);
+      if (h.length < 3) return { status: 'few', count: h.length };
+      const above = h.every(x => x.theta > CAT_CUT);
+      const mean = h.reduce((t, x) => t + x.theta, 0) / 3;
+      const se = Math.sqrt(h.reduce((t, x) => t + x.se * x.se, 0)) / 3;
+      return { status: above ? 'above' : 'mixed', p: Math.max(0.01, Math.min(0.99, catPhi((mean - CAT_CUT) / se))) };
+    }
+
+    function renderCatHome() {
+      catShowingReport = false;
+      document.getElementById('cat-root').innerHTML = `
+        <div class="cat-hero">
+          <p class="cat-eyebrow">Adaptive exam · CAT</p>
+          <h2>Sit a full NCLEX-style adaptive exam</h2>
+          <p>Every answer changes the next question. Get one right and the next one is harder; miss one and it eases off. Just like the real exam, it can stop at 85 questions once it is 95% sure you are above or below the passing standard, or it keeps going up to 150.</p>
+          <button type="button" class="cat-go" onclick="catStart()">Start adaptive exam →</button>
+        </div>
+        <div class="cat-grid">
+          <div class="cat-card"><h3>📏 85 to 150 questions</h3><p>Minimum 85. The exam ends as soon as it is confident about your result, so a short exam can be good news or bad news.</p></div>
+          <div class="cat-card"><h3>⏱ 5 hours</h3><p>The clock runs in the top bar. Running out of time before question 85 counts as not passing.</p></div>
+          <div class="cat-card"><h3>🔒 No going back</h3><p>No rationales, hints or Previous button until the end, so it feels like test day.</p></div>
+          <div class="cat-card"><h3>🧩 All formats</h3><p>Multiple choice, SATA, bow-ties, matrix, drop-downs, highlight, drag &amp; drop, calculations and case studies. NGN items earn partial credit.</p></div>
+        </div>
+        <div class="cat-note">💡 <b>Consistency is the best predictor.</b> Students who score above the passing standard on three or more adaptive exams in a row have the highest chance of passing NCLEX. Take one every week or so and watch the trend.</div>
+        ${catHistoryHTML()}`;
+    }
+
+    function renderCatReport(r) {
+      const b = catBandOf(r.p), pct = Math.round(r.p * 100);
+      const reasonText = {
+        above: `The exam stopped at question ${r.n} because it was 95% confident your ability is above the passing standard.`,
+        below: `The exam stopped at question ${r.n} because it was 95% confident your ability is below the passing standard.`,
+        max: `You reached the final question (${r.n}), so your result is based on your final ability estimate.`,
+        time: r.n >= CAT_MIN ? `Time ran out after ${r.n} questions, so your result is based on your final ability estimate.` : `Time ran out before the minimum number of questions. On the real NCLEX this counts as not passing.`,
+        bank: `You answered every question currently available, so your result is based on your final ability estimate.`,
+        quit: `You ended the exam early at question ${r.n}, before the minimum. Treat this result as a rough guide only.`,
+        'quit-late': `You ended the exam at question ${r.n}, so your result is based on your final ability estimate.`
+      }[r.reason] || '';
+      const feedback = {
+        above: `You are performing above the passing standard. Students who keep scoring here have a ${b.chance.toLowerCase()} chance of passing NCLEX. Protect it: keep doing mixed sets and an adaptive exam every week, and read the rationale on every question, including the ones you got right.`,
+        avg: `You are hovering around the passing standard, a borderline chance of passing if you sat the exam today. Small gains push you over the line: focus on your two weakest areas below, practice NGN case studies, and retake an adaptive exam in 5–7 days.`,
+        below: `You are currently below the passing standard, a low chance of passing if you sat the exam today. That is very fixable. Rebuild with the Mnemonic Vault and the ✗ Missed filter, drill your weakest areas below, and retake an adaptive exam in about a week.`
+      }[b.key];
+      const cons = catConsistency();
+      const consHTML = cons.status === 'above'
+        ? `<div class="cat-cons ok">🏆 <div><b>Consistently above the passing standard</b><p>Your last 3 adaptive exams were all above passing. Consistent performance above the passing standard is the strongest sign of readiness: your combined estimate is <b>${Math.round(cons.p * 100)}%</b> chance of passing.</p></div></div>`
+        : cons.status === 'mixed'
+        ? `<div class="cat-cons">📈 <div><b>Not consistent yet</b><p>At least one of your last 3 adaptive exams was below passing. Aim for three in a row above the passing standard: students who stay consistently above passing have the highest chance of passing NCLEX.</p></div></div>`
+        : `<div class="cat-cons">📈 <div><b>Build your trend</b><p>You have ${cons.count} complete adaptive exam${cons.count === 1 ? '' : 's'}. Take at least 3. Scoring consistently above the passing standard is the strongest predictor of passing NCLEX.</p></div></div>`;
+      // ability chart
+      const W = 600, H = 190, pad = 28, y = t => H / 2 - Math.max(-3, Math.min(3, t)) / 3 * (H / 2 - 14), x = i => pad + (r.hist.length > 1 ? i / (r.hist.length - 1) : 0.5) * (W - pad - 10);
+      const line = r.hist.map((t, i) => `${i ? 'L' : 'M'}${x(i).toFixed(1)},${y(t).toFixed(1)}`).join(' ');
+      const chart = `<svg viewBox="0 0 ${W} ${H}" class="cat-chart" role="img" aria-label="Ability estimate after each question">
+          <rect x="${pad}" y="0" width="${W - pad}" height="${H / 2}" fill="#ECFDF5"/><rect x="${pad}" y="${H / 2}" width="${W - pad}" height="${H / 2}" fill="#FFF1F2"/>
+          <line x1="${pad}" x2="${W}" y1="${H / 2}" y2="${H / 2}" stroke="#64748B" stroke-dasharray="5 4"/>
+          <text x="${W - 6}" y="${H / 2 - 6}" text-anchor="end" font-size="11" fill="#475569">Passing standard</text>
+          <text x="${pad + 6}" y="14" font-size="11" fill="#047857">Above</text><text x="${pad + 6}" y="${H - 6}" font-size="11" fill="#BE123C">Below</text>
+          <path d="${line}" fill="none" stroke="#4F46E5" stroke-width="2.5" stroke-linejoin="round"/>
+          ${r.hist.length ? `<circle cx="${x(r.hist.length - 1)}" cy="${y(r.hist[r.hist.length - 1])}" r="5" fill="#4F46E5"/>` : ''}
+        </svg>`;
+      const bars = (g, title) => `<div class="cat-card"><h3>${title}</h3>${Object.entries(g).sort((a, b) => a[1].s / a[1].n - b[1].s / b[1].n).map(([k, v]) => {
+          const pc = Math.round(v.s / v.n * 100), lv = pc >= 70 ? 'ok' : pc >= 50 ? 'mid' : 'low';
+          return `<div class="cat-bar-row"><div><span>${escapeHTML(k)}</span><b class="${lv}">${pc >= 70 ? 'Strong' : pc >= 50 ? 'Getting there' : 'Focus here'}</b></div><div class="cat-track"><i class="${lv}" style="width:${Math.max(4, pc)}%"></i></div></div>`;
+        }).join('')}</div>`;
+      const gauge = Math.max(3, Math.min(97, (r.theta + 3) / 6 * 100));
+      document.getElementById('cat-root').innerHTML = `
+        <div class="cat-report ${r.complete ? b.key : 'inc'}">
+          <div class="cat-result">
+            <p class="cat-eyebrow">Adaptive exam report · ${new Date(r.date).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+            <div class="cat-band">${r.complete ? b.label : 'Incomplete exam'}</div>
+            <div class="cat-chance"><span>Chance of passing NCLEX</span><b>${b.chance}</b><em>${pct}%</em></div>
+            <div class="cat-gauge"><div class="cat-gauge-bar"><i style="left:${gauge}%"></i><s></s></div><div class="cat-gauge-l"><span>Below</span><span>Passing standard</span><span>Above</span></div></div>
+            <p class="cat-fb">${feedback}</p>
+            <div class="cat-stats"><div><b>${r.n}</b><span>questions</span></div><div><b>${catFmtTime(r.ms)}</b><span>time used</span></div><div><b>${Math.round(r.scores.reduce((t, v) => t + v, 0) / Math.max(1, r.n) * 100)}%</b><span>points earned</span></div></div>
+            <p class="cat-reason">${reasonText}</p>
+          </div>
+          ${consHTML}
+          <div class="cat-card"><h3>Your ability, question by question</h3>${chart}<p class="cat-small">The line moves up when you answer harder questions correctly. The exam stops early once the line is clearly above or below the passing standard.</p></div>
+          <div class="cat-grid2">${bars(r.needs, 'By client need')}${bars(r.cats, 'By subject')}</div>
+          ${bars(r.fmt, 'By question format')}
+          <div class="cat-actions">
+            <button type="button" class="cat-go" onclick="catReview()">Review my answers &amp; rationales</button>
+            <button type="button" class="cat-alt" onclick="renderCatHome()">Back to adaptive exams</button>
+          </div>
+          <p class="cat-small">This is a practice estimate based on your answers in NCLEX Hero. It is not an official NCLEX result.</p>
+        </div>
+        ${catHistoryHTML()}`;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    function catReview() {
+      if (!catLast) return;
+      const list = catLast.ids.map(id => QUESTIONS.find(q => q.id === id)).filter(Boolean);
+      if (!list.length) return;
+      switchTab('simulator');
+      activeCategory = 'REVIEW';
+      document.querySelectorAll('.cat-btn').forEach(btn => {
+        const wasHidden = btn.classList.contains('hidden');
+        btn.className = 'cat-btn px-3 py-1 rounded-lg text-xs font-semibold bg-slate-800/70 text-slate-400 hover:text-white border border-slate-700/60' + (wasHidden ? ' hidden' : '');
+      });
+      filteredQuestions = list; currentIndex = 0;
+      populateJumper(); renderCurrentQuestion(); updateSetProgress();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     // ============================================================================
@@ -1949,6 +2749,19 @@
         showRationalePanel(isRightBow);
         return;
       }
+      if (NGN_UI.includes(q.type) || q.type === 'selectn') {
+        const missing = ngnMissing(q);
+        if (missing) { alert(missing); return; }
+        isSubmitted = true;
+        setSubmitEnabled(false);
+        const sc = ngnScore(q);
+        userStats.answered[q.id] = sc.pts === sc.max;
+        saveStats();
+        populateJumper();
+        renderOptions();
+        showRationalePanel(sc.pts === sc.max);
+        return;
+      }
       if (selectedIndices.length === 0) {
         alert('Please select at least one option first (or use Study Mode Peek on the right).');
         return;
@@ -1974,6 +2787,7 @@
         const A = q.bowtie.answer;
         bowSel = { condition: [A.condition], actions: [...A.actions], parameters: [...A.parameters] };
       }
+      if (NGN_UI.includes(q.type)) ngnSel = ngnKey(q);
       selectedIndices = [...q.correct];
       isSubmitted = true;           // Peek locks the question so it can't be scored afterwards
       setSubmitEnabled(false);
@@ -1983,6 +2797,7 @@
 
     function showRationalePanel(isRight, isPeek = false) {
       const q = filteredQuestions[currentIndex];
+      if (catMode && !isPeek) { catRecord(q); return; }   // adaptive exam: no feedback until the end
 
       document.getElementById('rationale-locked').classList.add('hidden');
       document.getElementById('rationale-unlocked').classList.remove('hidden');
@@ -1994,7 +2809,11 @@
 
       const isBow = q.type === 'bowtie';
       const bowPts = isBow ? bowScore(q) : 0;
-      keyBadge.textContent = isBow ? (isPeek ? 'Answer key' : `Score: ${bowPts}/5`) : `Answer: ${q.correct.map(i => LETTERS[i]).join(', ')}`;
+      const isNgnUi = NGN_UI.includes(q.type);
+      const ngnPts = (!isPeek && (isNgnUi || q.type === 'selectn')) ? ngnScore(q) : (!isPeek && isBow ? { pts: bowPts, max: 5 } : null);
+      keyBadge.textContent = isBow ? (isPeek ? 'Answer key' : `Score: ${bowPts}/5`)
+        : isNgnUi ? (isPeek ? 'Answer key' : `Score: ${ngnPts.pts}/${ngnPts.max}`)
+        : `Answer: ${q.correct.map(i => LETTERS[i]).join(', ')}` + (ngnPts ? ` · ${ngnPts.pts}/${ngnPts.max}` : '');
 
       if (isPeek) {
         banner.className = 'rounded-2xl p-4 border flex items-center justify-between bg-indigo-950/50 border-indigo-500/40 text-indigo-200';
@@ -2004,6 +2823,10 @@
         banner.className = 'rounded-2xl p-4 border flex items-center justify-between bg-emerald-950/50 border-emerald-500/40 text-emerald-200';
         title.textContent = '✅ Correct Clinical Judgment!';
         sub.textContent = 'You nailed this NCLEX priority concept.';
+      } else if (ngnPts && ngnPts.pts > 0) {
+        banner.className = 'rounded-2xl p-4 border flex items-center justify-between ngn-partial';
+        title.textContent = `🟡 Partly right: ${ngnPts.pts} of ${ngnPts.max} points`;
+        sub.textContent = NGN_PARTIAL_NOTE[q.type] || 'On the NGN each correct part earns a point. Review every part below.';
       } else {
         banner.className = 'rounded-2xl p-4 border flex items-center justify-between bg-rose-950/50 border-rose-500/40 text-rose-200';
         title.textContent = '❌ Incorrect — Review the Mnemonic Hook Below';
@@ -2030,6 +2853,11 @@
         return `<button onclick="goToQuestion(${r.id})" class="text-[11px] font-semibold px-2.5 py-1 rounded-lg bg-sky-500/10 border border-sky-500/30 text-sky-200 hover:bg-sky-500/20 text-left">${mark}${escapeHTML(r.topic)}</button>`;
       }).join('');
 
+      if (isNgnUi) {
+        ngnRationale(q, isPeek);
+        if (window.innerWidth < 1024) document.getElementById('rationale-unlocked').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        return;
+      }
       if (isBow) {
         const b = q.bowtie, A = b.answer;
         document.getElementById('rationale-framework').innerHTML = `
@@ -2075,6 +2903,7 @@
     }
 
     function prevQuestion() {
+      if (catMode) return;
       if (currentIndex > 0) {
         currentIndex--;
         renderCurrentQuestion();
@@ -2082,6 +2911,7 @@
     }
 
     function nextQuestion() {
+      if (catMode) return;
       if (currentIndex < filteredQuestions.length - 1) {
         currentIndex++;
         renderCurrentQuestion();
@@ -2131,7 +2961,7 @@
     }
 
     function switchTab(tab) {
-      ['simulator', 'vault', 'labs', 'strategies', 'pricing'].forEach(t => {
+      ['simulator', 'cat', 'vault', 'labs', 'strategies', 'pricing'].forEach(t => {
         document.getElementById('view-' + t).classList.add('hidden');
         document.getElementById('tab-' + t).className = 'px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all text-slate-400 hover:text-white';
       });
@@ -2139,6 +2969,7 @@
       document.getElementById('tab-' + tab).className = 'px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all bg-indigo-600 text-white shadow';
       document.getElementById('filter-bar').style.display = tab === 'simulator' ? 'block' : 'none';
       if (tab === 'vault') renderVault();
+      if (tab === 'cat' && !catMode) { if (!catShowingReport) renderCatHome(); window.scrollTo({ top: 0, behavior: 'smooth' }); }
       if (tab === 'strategies') { renderStrategyGame(); window.scrollTo({ top: 0, behavior: 'smooth' }); }
     }
 
@@ -2199,7 +3030,7 @@
       if (!q) return;
       const k = e.key.toLowerCase();
       const letterIdx = LETTERS.map(l => l.toLowerCase()).indexOf(k);
-      if (q.type !== 'bowtie' && letterIdx > -1 && letterIdx < q.options.length) { selectOption(letterIdx); e.preventDefault(); }
+      if (q.type !== 'bowtie' && !NGN_UI.includes(q.type) && letterIdx > -1 && letterIdx < q.options.length) { selectOption(letterIdx); e.preventDefault(); }
       else if (k === 'enter') { isSubmitted ? nextQuestion() : submitAnswer(); e.preventDefault(); }
       else if (k === 'arrowright') nextQuestion();
       else if (k === 'arrowleft') prevQuestion();
