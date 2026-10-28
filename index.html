@@ -1319,7 +1319,7 @@
       <section id="view-anim" class="hidden">
         <div class="anim-head">
           <h2 class="font-display font-extrabold text-2xl text-white">🎬 System Animations</h2>
-          <p class="text-sm text-slate-400">1-minute narrated animations of the highest-yield NCLEX topics. Watch one, then practise the questions linked to it.</p>
+          <p class="text-sm text-slate-400">16 one-minute narrated animations of the highest-yield NCLEX topics. Watch one, then practise the questions linked to it.</p>
         </div>
         <div id="anim-grid" class="anim-grid"></div>
       </section>
@@ -3167,6 +3167,22 @@
         re: /fetal heart|decelerat|\bfhr\b|veal chop|cord compression|uteroplacental|fetal monitor/ },
       { id: 'anticoagulants', title: 'Anticoagulants: Heparin and Warfarin', system: 'Pharmacology', dur: '0:58',
         re: /heparin|warfarin|enoxaparin|\binr\b|aptt|anticoagul|protamine|apixaban|rivaroxaban|\bdvt\b|pulmonary embol/ },
+      { id: 'copd', title: 'COPD: Oxygen and Breathing', system: 'Respiratory', dur: '1:07',
+        re: /\bcopd\b|emphysema|chronic bronchitis|pursed.lip|co2 retain|carbon dioxide retain|barrel chest/ },
+      { id: 'burns', title: 'Burns: Rule of Nines and Parkland', system: 'Integumentary', dur: '1:06',
+        re: /\bburns?\b|\bburned\b|parkland|rule of nines|\btbsa\b|inhalation injury|escharotomy/ },
+      { id: 'preeclampsia', title: 'Preeclampsia and Magnesium Sulfate', system: 'Maternal & Newborn', dur: '1:06',
+        re: /pre-?eclampsia|eclampsia|magnesium sulfate|\bhellp\b|gestational hypertension/ },
+      { id: 'shock', title: 'Shock: Three Main Types', system: 'Cardiovascular', dur: '1:07',
+        re: /\bshock\b|hypovolemi|cardiogenic|anaphyla|neurogenic|distributive/ },
+      { id: 'thyroid', title: 'Hyperthyroid vs Hypothyroid', system: 'Endocrine', dur: '1:12',
+        re: /thyroid|levothyroxine|graves|myxedema|methimazole|propylthiouracil|\bptu\b/ },
+      { id: 'siadh-di', title: 'SIADH vs Diabetes Insipidus', system: 'Endocrine', dur: '1:05',
+        re: /siadh|inappropriate antidiuretic|diabetes insipidus|desmopressin|hyponatrem|hypernatrem/ },
+      { id: 'chest-tubes', title: 'Chest Tubes Without Fear', system: 'Respiratory', dur: '1:06',
+        re: /chest tube|chest drain|water.seal|pleural drain|thoracostomy|pneumothorax|hemothorax/ },
+      { id: 'insulin', title: 'Insulin Types and Hypoglycemia', system: 'Pharmacology', dur: '1:09',
+        re: /insulin|hypoglycem|lispro|aspart|glargine|\bnph\b|rule of 15/ },
     ];
     let ANIM_OPEN = null;
     const animText = q => ((q.topic || '') + ' ' + (q.stem || '')).toLowerCase();
