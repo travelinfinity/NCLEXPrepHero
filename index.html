@@ -1865,17 +1865,27 @@
     function loadQuestions() {
       if (!questionsPromise) {
         const BASE_COLS = 'id, category, topic, type, stem, options, correct, mnemonic_title, mnemonic_body, rationale, teaching, option_rationales, fundamentals, client_need, related';
-        questionsPromise = sb.from('questions')
-          .select(BASE_COLS + ', bowtie, case_data, ngn, difficulty')
-          .order('id')
+        // Supabase returns at most 1,000 rows per request, so load the bank in pages.
+        const PAGE = 500;
+        const fetchAll = async (cols) => {
+          let all = [];
+          for (let from = 0; ; from += PAGE) {
+            const res = await sb.from('questions').select(cols).order('id').range(from, from + PAGE - 1);
+            if (res.error) return res;
+            all = all.concat(res.data || []);
+            if (!res.data || res.data.length < PAGE) break;
+          }
+          return { data: all, error: null };
+        };
+        questionsPromise = fetchAll(BASE_COLS + ', bowtie, case_data, ngn, difficulty')
           .then(res => (res.error && /difficulty/i.test(res.error.message || ''))
-            ? sb.from('questions').select(BASE_COLS + ', bowtie, case_data, ngn').order('id')   // difficulty column not added yet
+            ? fetchAll(BASE_COLS + ', bowtie, case_data, ngn')   // difficulty column not added yet
             : res)
           .then(res => (res.error && /ngn|column/i.test(res.error.message || ''))
-            ? sb.from('questions').select(BASE_COLS + ', bowtie, case_data').order('id')   // ngn column not added yet
+            ? fetchAll(BASE_COLS + ', bowtie, case_data')   // ngn column not added yet
             : res)
           .then(res => (res.error && /bowtie|case_data|column/i.test(res.error.message || ''))
-            ? sb.from('questions').select(BASE_COLS).order('id')   // new columns not added yet
+            ? fetchAll(BASE_COLS)   // new columns not added yet
             : res)
           .then(({ data, error }) => {
             if (error) throw error;
@@ -1958,7 +1968,7 @@
     // ============================================================================
     // 3. SIMULATOR STATE & CONTROLLERS
     // ============================================================================
-    const LETTERS = ['A', 'B', 'C', 'D', 'E', 'F'];
+    const LETTERS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
     let activeCategory = 'ALL';
     let filteredQuestions = [...QUESTIONS];
     let currentIndex = 0;
@@ -2106,7 +2116,7 @@
       document.getElementById('q-type-badge').textContent = NGN_BADGE[q.type] || (q.type === 'sata' ? 'SATA (Select All That Apply)' : 'Single Best Answer');
       renderCase(q);
       const hint = document.getElementById('key-hint');
-      if (hint) hint.textContent = (NGN_UI.includes(q.type) || q.type === 'bowtie') ? 'Enter submit • ←/→ move' : 'Keys: A–E select • Enter submit • ←/→ move';
+      if (hint) hint.textContent = (NGN_UI.includes(q.type) || q.type === 'bowtie') ? 'Enter submit • ←/→ move' : `Keys: A–${LETTERS[Math.max(0, Math.min(LETTERS.length, (q.options || []).length) - 1)]} select • Enter submit • ←/→ move`;
       const cs = q.ngn && q.ngn.case;
       document.getElementById('q-topic').textContent = cs
         ? `Case study · ${cs.title || ''} · Question ${cs.step} of ${cs.steps}${cs.stage ? ' · ' + cs.stage : ''}`
@@ -3288,7 +3298,7 @@
     function openQuestionFromVault(id) { goToQuestion(id); }
 
 
-    // Keyboard shortcuts in the simulator: A–E select, Enter submit, ←/→ navigate, F flag
+    // Keyboard shortcuts in the simulator: A–H select, Enter submit, ←/→ navigate, F flag
     document.addEventListener('keydown', e => {
       const sim = document.getElementById('view-simulator');
       if (document.getElementById('app-dashboard').classList.contains('hidden') || sim.classList.contains('hidden')) return;
