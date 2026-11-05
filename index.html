@@ -2698,10 +2698,52 @@
 
 
     // ============================================================================
-    // ADAPTIVE EXAM (CAT): 85–150 questions, 5 hours, stops at 95% confidence
+    // ADAPTIVE EXAMS (CAT): the bank is split into separate exams of 150 questions; each is 85–150 long, ends early on a confident pass, 5 hours
     // ============================================================================
     const CAT_MIN = 85, CAT_MAX = 150, CAT_TIME_MS = 5 * 60 * 60 * 1000, CAT_CUT = 0;   // passing standard on the ability (logit) scale
     const CAT_HISTORY_KEY = 'ngn_cat_history_v1';
+    const CAT_LEN = 150;   // questions in every exam
+    let CAT_EXAMS = null;  // [[question ids], ...] built once from the bank
+
+    // Split the bank into separate exams of 150. Deterministic (same split for every student):
+    // each client-need area is dealt across the exams so every exam is balanced, case studies stay whole,
+    // and new questions (higher ids) join without moving existing ones while the exam count stays the same.
+    function catBuildExams() {
+      if (CAT_EXAMS) return CAT_EXAMS;
+      const units = [], seenCase = {};
+      QUESTIONS.slice().sort((a, b) => a.id - b.id).forEach(q => {
+        const c = q.ngn && q.ngn.case;
+        if (c) {
+          if (seenCase[c.id]) return;
+          const steps = QUESTIONS.filter(x => x.ngn && x.ngn.case && x.ngn.case.id === c.id).sort((a, b) => (a.ngn.case.step || 1) - (b.ngn.case.step || 1));
+          seenCase[c.id] = 1; units.push({ need: q.clientNeed || 'Other', ids: steps.map(x => x.id), key: q.id });
+        } else units.push({ need: q.clientNeed || 'Other', ids: [q.id], key: q.id });
+      });
+      const total = units.reduce((t, u) => t + u.ids.length, 0);
+      const E = Math.max(1, Math.ceil(total / CAT_LEN));
+      const exams = Array.from({ length: E }, () => []), needCount = Array.from({ length: E }, () => ({}));
+      const place = (u, i) => { exams[i].push(...u.ids); needCount[i][u.need] = (needCount[i][u.need] || 0) + u.ids.length; };
+      // case studies first, spread one per exam in turn
+      units.filter(u => u.ids.length > 1).forEach((u, j) => place(u, j % E));
+      // then each client-need area dealt evenly: every question goes to the exam with the fewest of that area (then fewest overall)
+      const singles = units.filter(u => u.ids.length === 1), needs = {};
+      singles.forEach(u => (needs[u.need] = needs[u.need] || []).push(u));
+      Object.keys(needs).sort((x, y) => needs[y].length - needs[x].length || (x < y ? -1 : 1)).forEach(k => needs[k].forEach(u => {
+        let best = -1;
+        for (let i = 0; i < E; i++) {
+          if (exams[i].length >= CAT_LEN) continue;
+          if (best < 0 || (needCount[i][k] || 0) < (needCount[best][k] || 0) ||
+            ((needCount[i][k] || 0) === (needCount[best][k] || 0) && exams[i].length < exams[best].length)) best = i;
+        }
+        place(u, best < 0 ? exams.reduce((m, e, i) => e.length < exams[m].length ? i : m, 0) : best);
+      }));
+      const order = singles.map(u => ({ u }));
+      // the last exam may be a few short: top it up with single questions from other exams so every exam has 150
+      const all = order.filter(o => o.u.ids.length === 1).map(o => o.u.ids[0]);
+      exams.forEach(ex => { const have = new Set(ex); for (let i = 0; ex.length < CAT_LEN && i < all.length; i++) if (!have.has(all[i])) ex.push(all[i]); });
+      CAT_EXAMS = exams.map(ex => ex.slice(0, Math.max(CAT_LEN, ex.length)));
+      return CAT_EXAMS;
+    }
     const CAT_PLAN = { 'Management of Care': 18, 'Safety and Infection Control': 13, 'Health Promotion and Maintenance': 9, 'Psychosocial Integrity': 9,
       'Basic Care and Comfort': 9, 'Pharmacological and Parenteral Therapies': 16, 'Reduction of Risk Potential': 12, 'Physiological Adaptation': 14 };
     const CAT_TYPE_D = { single: 0, sata: 0.5, selectn: 0.4, matrix: 0.3, cloze: 0.2, highlight: 0.4, dragdrop: 0.3, order: 0.6, calc: 0.2, bowtie: 0.6 };
@@ -2752,13 +2794,13 @@
     function catPick() {
       while (cat.queue.length) { const q = cat.queue.shift(); if (!cat.used.has(q.id)) return q; }
       const left = cat.max - cat.items.length;
-      const caseFirst = {};
-      QUESTIONS.forEach(q => { const c = q.ngn && q.ngn.case; if (c && !cat.used.has(q.id)) caseFirst[c.id] = Math.min(caseFirst[c.id] || 99, c.step || 1); });
-      const avail = QUESTIONS.filter(q => {
+      const caseFirst = {}, BANK = QUESTIONS.filter(q => cat.pool.has(q.id));
+      BANK.forEach(q => { const c = q.ngn && q.ngn.case; if (c && !cat.used.has(q.id)) caseFirst[c.id] = Math.min(caseFirst[c.id] || 99, c.step || 1); });
+      const avail = BANK.filter(q => {
         if (cat.used.has(q.id)) return false;
         const c = q.ngn && q.ngn.case;
         if (!c) return true;
-        const rest = QUESTIONS.filter(x => x.ngn && x.ngn.case && x.ngn.case.id === c.id && !cat.used.has(x.id)).length;
+        const rest = BANK.filter(x => x.ngn && x.ngn.case && x.ngn.case.id === c.id && !cat.used.has(x.id)).length;
         return (c.step || 1) === caseFirst[c.id] && rest <= left;   // start case studies at step 1 and only if they fit
       });
       if (!avail.length) return null;
@@ -2776,15 +2818,18 @@
       const ranked = pool.map(q => ({ q, d: Math.abs(catB(q) - cat.theta) })).sort((a, b) => a.d - b.d).slice(0, 3);
       const q = ranked[Math.floor(Math.random() * ranked.length)].q;
       const c = q.ngn && q.ngn.case;
-      if (c) cat.queue = QUESTIONS.filter(x => x !== q && x.ngn && x.ngn.case && x.ngn.case.id === c.id && !cat.used.has(x.id))
+      if (c) cat.queue = BANK.filter(x => x !== q && x.ngn && x.ngn.case && x.ngn.case.id === c.id && !cat.used.has(x.id))
         .sort((a, b) => a.ngn.case.step - b.ngn.case.step);
       return q;
     }
 
-    function catStart() {
+    function catStart(examNo) {
       if (!QUESTIONS.length) { alert('Questions are still loading. Try again in a moment.'); return; }
-      const max = Math.min(CAT_MAX, QUESTIONS.length);
-      cat = { items: [], s: [], b: [], hist: [], theta: 0, se: Infinity, queue: [], used: new Set(),
+      const exams = catBuildExams();
+      examNo = Math.max(1, Math.min(exams.length, examNo || catNextExam()));
+      const pool = new Set(exams[examNo - 1]);
+      const max = pool.size;
+      cat = { items: [], s: [], b: [], hist: [], theta: 0, se: Infinity, queue: [], used: new Set(), pool, exam: examNo,
         max, min: Math.min(CAT_MIN, max), start: Date.now() };
       catMode = true; catShowingReport = false;
       document.body.classList.add('cat-on');
@@ -2813,7 +2858,7 @@
       document.getElementById('q-topic').textContent = cs ? `Case study · Question ${cs.step} of ${cs.steps}` : '';
       const ins = document.querySelector('#q-instruction span');
       ins.textContent = ins.textContent.replace(/ \(You (got|missed)[^)]*\)$/, '');
-      document.getElementById('cat-qnum').textContent = `Question ${cat.items.length + 1}`;
+      document.getElementById('cat-qnum').textContent = `Exam ${cat.exam} · Question ${cat.items.length + 1} of ${cat.max}`;
       window.scrollTo({ top: 0 });
     }
     function catRecord(q) {
@@ -2821,13 +2866,15 @@
       catEstimate();
       cat.hist.push({ t: cat.theta, se: cat.se });
       const n = cat.items.length;
-      if (n >= cat.min && Math.abs(cat.theta - CAT_CUT) >= 1.96 * cat.se) return catFinish(cat.theta > CAT_CUT ? 'above' : 'below');
+      // adaptive length: from question 85, stop as soon as it is 95% confident the student is above the passing standard;
+      // below or unsure keeps going (more chances to show passing ability) up to the full 150
+      if (n >= cat.min && cat.theta - CAT_CUT >= 1.96 * cat.se) return catFinish('above');
       if (n >= cat.max) return catFinish('max');
       catNext();
     }
     function catEndEarly() {
       if (!catMode) return;
-      if (!confirm('End the adaptive exam now? Your report will be marked incomplete if you stop before the minimum.')) return;
+      if (!confirm(`End Exam ${cat.exam} now? Your report will be marked incomplete if you stop before question ${CAT_MIN}.`)) return;
       catFinish(cat.items.length >= cat.min ? 'quit-late' : 'quit');
     }
 
@@ -2853,13 +2900,13 @@
         return g;
       };
       const res = {
-        date: Date.now(), n, theta: cat.theta, se: isFinite(cat.se) ? cat.se : 9, p, reason, complete,
+        date: Date.now(), exam: cat.exam, n, theta: cat.theta, se: isFinite(cat.se) ? cat.se : 9, p, reason, complete,
         ms: Date.now() - cat.start, band: catBandOf(p).key,
         needs: group(q => q.clientNeed), cats: group(q => q.category === 'OB & Peds' ? 'Maternal & Newborn' : q.category),
         fmt: group(q => isNgnType(q) ? 'Next Generation (NGN) items' : 'Multiple choice & SATA'),
         hist: cat.hist.map(h => Math.round(h.t * 100) / 100), ids: cat.items.map(q => q.id), scores: cat.s.slice()
       };
-      if (n > 0) { const h = catLoadHistory(); h.push({ date: res.date, n, theta: res.theta, se: res.se, p, band: res.band, complete }); catSaveHistory(h); }
+      if (n > 0) { const h = catLoadHistory(); h.push({ date: res.date, exam: cat.exam, n, theta: res.theta, se: res.se, p, band: res.band, complete }); catSaveHistory(h); }
       catLast = res; catShowingReport = true;
       setCategory('ALL');
       switchTab('cat');
@@ -2872,7 +2919,7 @@
       if (!h.length) return '';
       return `<div class="cat-card"><h3>Your adaptive exams</h3><div class="cat-hist">${h.map(x => {
         const b = catBandOf(x.p);
-        return `<div class="cat-hrow"><span>${new Date(x.date).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}</span><span>${x.n} questions</span>
+        return `<div class="cat-hrow"><span>${new Date(x.date).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}</span><span>${x.exam ? 'Exam ' + x.exam + ' · ' : ''}${x.n} questions</span>
           <span class="cat-tag ${x.complete ? b.key : 'inc'}">${x.complete ? b.label : 'Incomplete'}</span><b>${x.complete ? Math.round(x.p * 100) + '%' : '—'}</b></div>`;
       }).join('')}</div></div>`;
     }
@@ -2886,23 +2933,40 @@
       return { status: above ? 'above' : 'mixed', p: Math.max(0.01, Math.min(0.99, catPhi((mean - CAT_CUT) / se))) };
     }
 
+    function catNextExam() {   // first exam not yet completed
+      const ex = catBuildExams(), done = new Set(catLoadHistory().filter(x => x.complete && x.exam).map(x => x.exam));
+      for (let i = 1; i <= ex.length; i++) if (!done.has(i)) return i;
+      return 1;
+    }
     function renderCatHome() {
       catShowingReport = false;
+      const ex = QUESTIONS.length ? catBuildExams() : [];
+      const hist = catLoadHistory(), nxt = ex.length ? catNextExam() : 1;
+      const cards = ex.map((_, i) => {
+        const no = i + 1, last = hist.filter(x => x.exam === no).slice(-1)[0];
+        const st = !last ? '<span class="cat-tag inc">Not started</span>'
+          : last.complete ? `<span class="cat-tag ${catBandOf(last.p).key}">${catBandOf(last.p).label} · ${Math.round(last.p * 100)}%</span>`
+          : '<span class="cat-tag inc">Incomplete</span>';
+        return `<div class="cat-card cat-exam${no === nxt ? ' next' : ''}"><h3>Exam ${no}</h3><p>${CAT_MIN}–${CAT_LEN} questions · 5 hours</p><div style="margin:10px 0 12px">${st}</div>
+          <button type="button" class="${no === nxt ? 'cat-go' : 'cat-alt'}" style="width:100%" onclick="catStart(${no})">${last ? 'Retake' : 'Start'} Exam ${no} →</button></div>`;
+      }).join('');
       document.getElementById('cat-root').innerHTML = `
         <div class="cat-hero">
-          <p class="cat-eyebrow">Adaptive exam · CAT</p>
-          <h2>Sit a full NCLEX-style adaptive exam</h2>
-          <p>Every answer changes the next question. Get one right and the next one is harder; miss one and it eases off. Just like the real exam, it can stop at 85 questions once it is 95% sure you are above or below the passing standard, or it keeps going up to 150.</p>
-          <button type="button" class="cat-go" onclick="catStart()">Start adaptive exam →</button>
+          <p class="cat-eyebrow">Adaptive exams · CAT</p>
+          <h2>${ex.length || ''} full NCLEX-style adaptive exams</h2>
+          <p>Each exam is its own set of ${CAT_LEN} questions, so you won't see the same question in two exams. Every answer changes the next question: get one right and the next one is harder, miss one and it eases off. From question ${CAT_MIN}, the exam ends as soon as it is 95% sure you are above the passing standard. If you're not there yet, it keeps going, giving you more chances to show it, up to ${CAT_LEN}.</p>
+          ${ex.length ? `<button type="button" class="cat-go" onclick="catStart(${nxt})">Start Exam ${nxt} →</button>` : '<p><i>Loading exams…</i></p>'}
         </div>
-        <div class="cat-grid">
-          <div class="cat-card"><h3>📏 85 to 150 questions</h3><p>Minimum 85. The exam ends as soon as it is confident about your result, so a short exam can be good news or bad news.</p></div>
-          <div class="cat-card"><h3>⏱ 5 hours</h3><p>The clock runs in the top bar. Running out of time before question 85 counts as not passing.</p></div>
+        <div class="cat-grid">${cards}</div>
+        <div class="cat-grid" style="margin-top:12px">
+          <div class="cat-card"><h3>📏 ${CAT_MIN} to ${CAT_LEN} questions</h3><p>Minimum ${CAT_MIN}. A confident pass ends the exam early; otherwise it continues up to ${CAT_LEN}. Balanced across all 8 client-need areas like the NCLEX test plan.</p></div>
+          <div class="cat-card"><h3>⏱ 5 hours</h3><p>The clock runs in the top bar. Running out of time before question ${CAT_MIN} counts as not passing.</p></div>
           <div class="cat-card"><h3>🔒 No going back</h3><p>No rationales, hints or Previous button until the end, so it feels like test day.</p></div>
           <div class="cat-card"><h3>🧩 All formats</h3><p>Multiple choice, SATA, bow-ties, matrix, drop-downs, highlight, drag &amp; drop, calculations and case studies. NGN items earn partial credit.</p></div>
         </div>
-        <div class="cat-note">💡 <b>Consistency is the best predictor.</b> Students who score above the passing standard on three or more adaptive exams in a row have the highest chance of passing NCLEX. Take one every week or so and watch the trend.</div>
+        <div class="cat-note">💡 <b>Consistency is the best predictor.</b> Students who score above the passing standard on three or more adaptive exams in a row have the highest chance of passing NCLEX. Work through the exams in order, one every week or so, and watch the trend.</div>
         ${catHistoryHTML()}`;
+      if (!ex.length) loadQuestions().then(() => { if (!catMode && !catShowingReport) renderCatHome(); }).catch(() => {});
     }
 
     function renderCatReport(r) {
@@ -2910,7 +2974,7 @@
       const reasonText = {
         above: `The exam stopped at question ${r.n} because it was 95% confident your ability is above the passing standard.`,
         below: `The exam stopped at question ${r.n} because it was 95% confident your ability is below the passing standard.`,
-        max: `You reached the final question (${r.n}), so your result is based on your final ability estimate.`,
+        max: `You answered all ${r.n} questions without the exam becoming confident you were above the passing standard, so your result is based on your final ability estimate.`,
         time: r.n >= CAT_MIN ? `Time ran out after ${r.n} questions, so your result is based on your final ability estimate.` : `Time ran out before the minimum number of questions. On the real NCLEX this counts as not passing.`,
         bank: `You answered every question currently available, so your result is based on your final ability estimate.`,
         quit: `You ended the exam early at question ${r.n}, before the minimum. Treat this result as a rough guide only.`,
@@ -2946,7 +3010,7 @@
       document.getElementById('cat-root').innerHTML = `
         <div class="cat-report ${r.complete ? b.key : 'inc'}">
           <div class="cat-result">
-            <p class="cat-eyebrow">Adaptive exam report · ${new Date(r.date).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+            <p class="cat-eyebrow">${r.exam ? 'Exam ' + r.exam + ' · ' : ''}Adaptive exam report · ${new Date(r.date).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' })}</p>
             <div class="cat-band">${r.complete ? b.label : 'Incomplete exam'}</div>
             <div class="cat-chance"><span>Chance of passing NCLEX</span><b>${b.chance}</b><em>${pct}%</em></div>
             <div class="cat-gauge"><div class="cat-gauge-bar"><i style="left:${gauge}%"></i><s></s></div><div class="cat-gauge-l"><span>Below</span><span>Passing standard</span><span>Above</span></div></div>
@@ -2955,7 +3019,7 @@
             <p class="cat-reason">${reasonText}</p>
           </div>
           ${consHTML}
-          <div class="cat-card"><h3>Your ability, question by question</h3>${chart}<p class="cat-small">The line moves up when you answer harder questions correctly. The exam stops early once the line is clearly above or below the passing standard.</p></div>
+          <div class="cat-card"><h3>Your ability, question by question</h3>${chart}<p class="cat-small">The line moves up when you answer harder questions correctly. The exam ends early once the line is clearly above the passing standard; otherwise it runs to 150.</p></div>
           <div class="cat-grid2">${bars(r.needs, 'By client need')}${bars(r.cats, 'By subject')}</div>
           ${bars(r.fmt, 'By question format')}
           <div class="cat-actions">
