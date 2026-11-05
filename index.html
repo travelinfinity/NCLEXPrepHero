@@ -249,7 +249,22 @@
     .cat-track i { display: block; height: 100%; border-radius: 999px; }
     .cat-track i.ok { background: #34D399; } .cat-track i.mid { background: #FBBF24; } .cat-track i.low { background: #FB7185; }
     .cat-actions { display: flex; flex-wrap: wrap; gap: 10px; }
-    #view-cat.hidden { display: none !important; }
+    #view-cat.hidden, #view-std.hidden { display: none !important; }
+
+    /* ---------- Standard exam (not adaptive) ---------- */
+    body.std-on #cat-bar { display: flex; grid-column: 1 / -1; }
+    body.std-on #filter-bar, body.std-on #mode-nav, body.std-on #prev-btn, body.std-on #rationale-locked button { display: none !important; }
+    body.std-on:not(.std-sub) #next-btn { display: none !important; }
+    body.std-on #q-topic:empty { display: none; }
+    body.std-end #rationale-col, body.std-end #next-btn, body.std-end #anim-links { display: none !important; }
+    body.std-end #question-col { grid-column: 1 / -1; width: 100%; max-width: 860px; margin: 0 auto; }
+    .std-fb { border: 0; padding: 0; margin: 0 0 18px; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px; }
+    .std-fb legend { font: 700 14px/1.3 Inter, sans-serif; color: #FFFFFF; margin-bottom: 10px; padding: 0; }
+    .std-fb label { display: flex; gap: 10px; align-items: flex-start; background: rgba(255,255,255,.1); border: 1.5px solid rgba(255,255,255,.25); border-radius: 14px; padding: 12px 14px; cursor: pointer; }
+    .std-fb label:has(input:checked) { background: rgba(255,255,255,.2); border-color: #FFFFFF; }
+    .std-fb input { margin-top: 3px; accent-color: #FFFFFF; width: 16px; height: 16px; flex: none; }
+    .std-fb b { display: block; font: 700 14px/1.3 Inter, sans-serif; color: #FFFFFF; }
+    .std-fb small { display: block; font-size: 12.5px; line-height: 1.45; color: #E0E7FF; margin-top: 3px; }
     @media (max-width: 520px) { .cat-hero, .cat-result { padding: 20px; } .cat-hrow { grid-template-columns: 56px 1fr auto; } .cat-hrow b { display: none; } }
     @media (prefers-reduced-motion: reduce) { .cat-result, .cat-gauge-bar i { animation: none; } }
 
@@ -939,11 +954,14 @@
           <button onclick="switchTab('home')" id="tab-home" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all text-slate-400 hover:text-white">
             🏠 Home
           </button>
-          <button onclick="switchTab('simulator')" id="tab-simulator" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all bg-indigo-600 text-white shadow">
-            Exam Simulator
+          <button onclick="switchTab('std')" id="tab-std" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all text-slate-400 hover:text-white">
+            📝 Standard Exam
           </button>
           <button onclick="switchTab('cat')" id="tab-cat" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all text-slate-400 hover:text-white">
             🎯 Adaptive Exam
+          </button>
+          <button onclick="switchTab('simulator')" id="tab-simulator" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all bg-indigo-600 text-white shadow">
+            📚 Practice
           </button>
           <button onclick="switchTab('anim')" id="tab-anim" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all text-slate-400 hover:text-white">
             🎬 Animations
@@ -1049,7 +1067,7 @@
           <h2 id="nh-title">Welcome<span id="nh-name"></span>! Let's get you NCLEX-ready.</h2>
           <p>Everything you need is in one place: NCLEX-style practice with every Next Generation question format, step-by-step rationales for every answer, memory hooks, and quick-review notes. Choose how you want to study today. You can switch any time from the menu above.</p>
           <div class="nh-inside" aria-label="What's inside">
-            <span>🧩 All NGN formats</span><span>📋 Unfolding case studies</span><span>🎯 Adaptive exam</span><span>🧠 Mnemonics & rationales</span><span>🧪 Lab values</span><span>🎬 Animations</span><span>💡 Test-taking strategies</span>
+            <span>🧩 All NGN formats</span><span>📋 Unfolding case studies</span><span>📝 Standard exams</span><span>🎯 Adaptive exams</span><span>🧠 Mnemonics & rationales</span><span>🧪 Lab values</span><span>🎬 Animations</span><span>💡 Test-taking strategies</span>
           </div>
         </div>
 
@@ -1068,11 +1086,11 @@
             <p>Work on one area at a time, such as Pharmacology, Pediatrics or Prioritization, or a client-needs category like Management of Care.</p>
             <span class="nh-go">Choose a topic ↓</span>
           </button>
-          <button type="button" class="nh-card" onclick="homeGo('standard')">
+          <button type="button" class="nh-card" onclick="homeGo('std')">
             <span class="nh-ic" aria-hidden="true">📝</span>
-            <h3>Standard practice questions</h3>
-            <p>A mixed set from every topic and question type, at your own pace. Submit each answer to see the rationale, memory hook and teaching point.</p>
-            <span class="nh-go">Start practicing →</span>
+            <h3>Take a standard exam</h3>
+            <p>150 questions, freshly shuffled from the whole question bank every time. Not adaptive. See the answers after each question or all at the end.</p>
+            <span class="nh-go">Start standard exam →</span>
           </button>
           <button type="button" class="nh-card" id="nh-notes-card" aria-expanded="false" aria-controls="nh-notes-panel" onclick="homeToggle('notes')">
             <span class="nh-ic" aria-hidden="true">📖</span>
@@ -1084,8 +1102,9 @@
 
         <div class="nh-panel" id="nh-topic-panel" hidden>
           <h4>Choose a topic</h4>
-          <p class="nh-sub">Questions in the simulator will be filtered to this topic. Use "All Categories" in the simulator to go back to a mix.</p>
+          <p class="nh-sub">Practice questions at your own pace, filtered to this topic. Use "All Categories" in Practice to go back to a mix.</p>
           <div class="nh-chips">
+            <button type="button" class="nh-chip alt" onclick="homeTopic('ALL')">🔀 All topics mixed</button>
             <button type="button" class="nh-chip" onclick="homeTopic('Med-Surg')">Med-Surg</button>
             <button type="button" class="nh-chip" onclick="homeTopic('Pharmacology')">Pharmacology</button>
             <button type="button" class="nh-chip" onclick="homeTopic('OB & Peds')">Maternal & Newborn</button>
@@ -1128,8 +1147,8 @@
       <!-- VIEW 1: EXAM SIMULATOR (SPLIT SCREEN) -->
       <section id="view-simulator" class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         <div id="cat-bar" class="cat-bar">
-          <div class="cat-bar-l"><span class="cat-pill">🎯 Adaptive exam</span><b id="cat-qnum">Question 1</b></div>
-          <div class="cat-bar-r"><span id="cat-clock" title="Time remaining">⏱ 5:00:00</span><button type="button" onclick="catEndEarly()">End exam</button></div>
+          <div class="cat-bar-l"><span class="cat-pill" id="cat-pill">🎯 Adaptive exam</span><b id="cat-qnum">Question 1</b></div>
+          <div class="cat-bar-r"><span id="cat-clock" title="Time remaining">⏱ 5:00:00</span><button type="button" onclick="stdMode ? stdEndEarly() : catEndEarly()">End exam</button></div>
         </div>
         
         <!-- Left Column: Question Stem & Interactive Choices -->
@@ -1455,6 +1474,7 @@
         </div>
       </div>
       <section id="view-cat" class="hidden"><div id="cat-root" class="cat"></div></section>
+      <section id="view-std" class="hidden"><div id="std-root" class="cat"></div></section>
 
       <section id="view-strategies" class="hidden st">
         <div class="st-hero">
@@ -2099,6 +2119,8 @@
     let selectedIndices = [];
     let struckIndices = [];
     let isSubmitted = false;
+    let stdMode = false, std = null, stdTimer = null, stdLast = null, stdShowingReport = false;   // standard exam
+    let reviewAnswers = null;   // a finished standard exam's answers, shown when reviewing it
 
     function loadStats() {
       try {
@@ -2183,6 +2205,7 @@
         return false;
       }
       activeCategory = cat;
+      reviewAnswers = null;
       document.querySelectorAll('.cat-btn').forEach(btn => {
         const wasHidden = btn.classList.contains('hidden');
         btn.className = 'cat-btn px-3 py-1 rounded-lg text-xs font-semibold bg-slate-800/70 text-slate-400 hover:text-white border border-slate-700/60' + (wasHidden ? ' hidden' : '');
@@ -2269,6 +2292,7 @@
       setSubmitEnabled(true);
 
       renderOptions();
+      if (activeCategory === 'REVIEW' && reviewAnswers && reviewAnswers[q.id]) stdApplyReview(q);
     }
 
     function renderOptions() {
@@ -3037,6 +3061,7 @@
       if (!list.length) return;
       switchTab('simulator');
       activeCategory = 'REVIEW';
+      reviewAnswers = null;
       document.querySelectorAll('.cat-btn').forEach(btn => {
         const wasHidden = btn.classList.contains('hidden');
         btn.className = 'cat-btn px-3 py-1 rounded-lg text-xs font-semibold bg-slate-800/70 text-slate-400 hover:text-white border border-slate-700/60' + (wasHidden ? ' hidden' : '');
@@ -3044,6 +3069,229 @@
       filteredQuestions = list; currentIndex = 0;
       populateJumper(); renderCurrentQuestion(); updateSetProgress();
       window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // ============================================================================
+    // STANDARD EXAMS (not adaptive): a fresh, reshuffled set of 150 every attempt, always runs to 150
+    // ============================================================================
+    const STD_LEN = 150, STD_TIME_MS = 5 * 60 * 60 * 1000, STD_CASES = 3;
+    const STD_SEEN_KEY = 'ngn_std_seen_v1', STD_HISTORY_KEY = 'ngn_std_history_v1', STD_PREF_KEY = 'ngn_std_feedback_v1';
+
+    function stdLoad(key, fb) { try { const v = JSON.parse(localStorage.getItem(key)); return v == null ? fb : v; } catch (e) { return fb; } }
+    function stdSave(key, v) { try { localStorage.setItem(key, JSON.stringify(v)); } catch (e) {} }
+    function stdShuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+
+    // A new random exam every time: questions not yet seen in a standard exam come first (the cycle restarts once the
+    // bank runs out), up to 3 whole case studies, the rest balanced across the 8 client-need areas like the NCLEX test plan.
+    function stdBuild() {
+      const caseMap = {}, singles = [];
+      QUESTIONS.forEach(q => {
+        const c = q.ngn && q.ngn.case;
+        if (c && c.id) (caseMap[c.id] = caseMap[c.id] || []).push(q); else singles.push(q);
+      });
+      const cases = Object.values(caseMap).map(l => l.sort((a, b) => (a.ngn.case.step || 0) - (b.ngn.case.step || 0))).filter(l => l.length < STD_LEN / 3);
+      let seen = new Set(stdLoad(STD_SEEN_KEY, []));
+      const fresh = q => !seen.has(q.id);
+      const freshCount = singles.filter(fresh).length + cases.filter(l => l.every(fresh)).reduce((t, l) => t + l.length, 0);
+      const newCycle = freshCount < STD_LEN;   // almost the whole bank used: finish what's left, then start a new cycle
+      const blocks = stdShuffle(cases.filter(l => l.every(fresh))).concat(stdShuffle(cases.filter(l => !l.every(fresh)))).slice(0, STD_CASES);
+      const room = Math.max(0, STD_LEN - blocks.reduce((t, b) => t + b.length, 0));
+      const count = {};
+      blocks.forEach(b => b.forEach(q => { count[q.clientNeed] = (count[q.clientNeed] || 0) + 1; }));
+      const chosen = [], used = new Set();
+      const take = q => { chosen.push(q); used.add(q.id); count[q.clientNeed] = (count[q.clientNeed] || 0) + 1; };
+      // unseen questions first, each client-need area up to its NCLEX test-plan share; then any unseen; then seen ones
+      [stdShuffle(singles.filter(fresh)), stdShuffle(singles.filter(q => !fresh(q)))].forEach(pool => {
+        Object.keys(CAT_PLAN).forEach(k => {
+          const target = Math.round(CAT_PLAN[k] / 100 * STD_LEN);
+          for (let i = 0; i < pool.length && (count[k] || 0) < target && chosen.length < room; i++)
+            if (pool[i].clientNeed === k && !used.has(pool[i].id)) take(pool[i]);
+        });
+        for (let i = 0; i < pool.length && chosen.length < room; i++) if (!used.has(pool[i].id)) take(pool[i]);
+      });
+      const list = stdShuffle(chosen.map(q => [q]).concat(blocks)).flat();   // random order; case studies stay in step order
+      if (newCycle) seen = new Set();
+      list.forEach(q => seen.add(q.id));
+      stdSave(STD_SEEN_KEY, [...seen]);
+      return list;
+    }
+
+    function stdStart(feedback) {
+      if (!QUESTIONS.length) { alert('Questions are still loading. Try again in a moment.'); return; }
+      if (catMode) return;
+      feedback = feedback === 'end' ? 'end' : 'each';
+      stdSave(STD_PREF_KEY, feedback);
+      std = { list: stdBuild(), i: 0, items: [], s: [], answers: {}, feedback, start: Date.now() };
+      stdMode = true; stdShowingReport = false;
+      document.body.classList.add('std-on');
+      document.body.classList.toggle('std-end', feedback === 'end');
+      document.getElementById('cat-pill').textContent = '📝 Standard exam';
+      document.getElementById('submit-btn').textContent = feedback === 'end' ? 'Submit answer' : 'Submit & see the answer';
+      switchTab('simulator');
+      clearInterval(stdTimer);
+      stdTimer = setInterval(stdTick, 1000); stdTick();
+      stdShow();
+    }
+    function stdTick() {
+      if (!stdMode) return;
+      const left = Math.max(0, STD_TIME_MS - (Date.now() - std.start));
+      const h = Math.floor(left / 3600000), m = Math.floor(left / 60000) % 60, sec = Math.floor(left / 1000) % 60;
+      document.getElementById('cat-clock').textContent = `⏱ ${h}:${String(m).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
+      if (left <= 0) stdFinish('time');
+    }
+    function stdShow() {
+      const q = std.list[std.i];
+      document.body.classList.remove('std-sub');
+      filteredQuestions = [q];
+      currentIndex = 0;
+      renderCurrentQuestion();
+      const cs = q.ngn && q.ngn.case;
+      document.getElementById('q-topic').textContent = cs ? `Case study · Question ${cs.step} of ${cs.steps}` : '';
+      const ins = document.querySelector('#q-instruction span');
+      ins.textContent = ins.textContent.replace(/ \(You (got|missed)[^)]*\)$/, '');
+      document.getElementById('cat-qnum').textContent = `Question ${std.i + 1} of ${std.list.length}`;
+      document.getElementById('next-btn').textContent = std.i + 1 >= std.list.length ? 'Finish exam →' : 'Next question →';
+      window.scrollTo({ top: 0 });
+    }
+    function stdRecord(q, isRight) {
+      if (std.answers[q.id]) return;
+      std.items.push(q);
+      std.s.push(catFrac(q));
+      std.answers[q.id] = { sel: [...selectedIndices], bow: JSON.parse(JSON.stringify(bowSel)), ngn: JSON.parse(JSON.stringify(ngnSel)), right: !!isRight };
+    }
+    function stdAdvance() {
+      if (!stdMode) return;
+      std.i++;
+      if (std.i >= std.list.length) return stdFinish('done');
+      stdShow();
+    }
+    function stdEndEarly() {
+      if (!stdMode) return;
+      if (!confirm(`End the exam now? You'll get a report on the ${std.items.length} question${std.items.length === 1 ? '' : 's'} you've answered.`)) return;
+      stdFinish('quit');
+    }
+    function stdGroup(items, scores, key) {
+      const g = {};
+      items.forEach((q, i) => { const k = key(q) || 'Other'; g[k] = g[k] || { s: 0, n: 0 }; g[k].s += scores[i]; g[k].n++; });
+      return g;
+    }
+    function stdFinish(reason) {
+      if (!stdMode) return;
+      stdMode = false;
+      clearInterval(stdTimer);
+      document.body.classList.remove('std-on', 'std-end', 'std-sub');
+      document.getElementById('cat-pill').textContent = '🎯 Adaptive exam';
+      document.getElementById('next-btn').textContent = 'Next →';
+      document.getElementById('submit-btn').textContent = 'Submit & Reveal Rationale + Mnemonic';
+      const n = std.items.length, pts = std.s.reduce((t, v) => t + v, 0);
+      const res = {
+        date: Date.now(), n, total: std.list.length, pct: n ? pts / n : 0, reason, feedback: std.feedback, ms: Date.now() - std.start,
+        right: std.items.filter(q => std.answers[q.id].right).length,
+        needs: stdGroup(std.items, std.s, q => q.clientNeed),
+        cats: stdGroup(std.items, std.s, q => q.category === 'OB & Peds' ? 'Maternal & Newborn' : q.category),
+        fmt: stdGroup(std.items, std.s, q => isNgnType(q) ? 'Next Generation (NGN) items' : 'Multiple choice & SATA'),
+        ids: std.items.map(q => q.id), answers: std.answers
+      };
+      if (n) { const h = stdLoad(STD_HISTORY_KEY, []); h.push({ date: res.date, n, total: res.total, pct: res.pct }); stdSave(STD_HISTORY_KEY, h.slice(-20)); }
+      stdLast = res; stdShowingReport = true;
+      setCategory('ALL');
+      switchTab('std');
+      renderStdReport(res);
+    }
+
+    function stdLevel(pc) { return pc >= 70 ? 'above' : pc >= 50 ? 'avg' : 'below'; }
+    function stdBars(g, title) {
+      return `<div class="cat-card"><h3>${title}</h3>${Object.entries(g).sort((a, b) => a[1].s / a[1].n - b[1].s / b[1].n).map(([k, v]) => {
+        const pc = Math.round(v.s / v.n * 100), lv = pc >= 70 ? 'ok' : pc >= 50 ? 'mid' : 'low';
+        return `<div class="cat-bar-row"><div><span>${escapeHTML(k)} · ${pc}%</span><b class="${lv}">${pc >= 70 ? 'Strong' : pc >= 50 ? 'Getting there' : 'Focus here'}</b></div><div class="cat-track"><i class="${lv}" style="width:${Math.max(4, pc)}%"></i></div></div>`;
+      }).join('')}</div>`;
+    }
+    function stdHistoryHTML() {
+      const h = stdLoad(STD_HISTORY_KEY, []).slice(-8).reverse();
+      if (!h.length) return '';
+      return `<div class="cat-card"><h3>Your standard exams</h3><div class="cat-hist">${h.map(x => {
+        const pc = Math.round(x.pct * 100), done = x.n >= x.total;
+        return `<div class="cat-hrow"><span>${new Date(x.date).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}</span><span>${x.n} of ${x.total} questions</span>
+          <span class="cat-tag ${done ? stdLevel(pc) : 'inc'}">${done ? 'Complete' : 'Ended early'}</span><b>${pc}%</b></div>`;
+      }).join('')}</div></div>`;
+    }
+    function renderStdHome() {
+      stdShowingReport = false;
+      const pref = stdLoad(STD_PREF_KEY, 'each');
+      document.getElementById('std-root').innerHTML = `
+        <div class="cat-hero">
+          <p class="cat-eyebrow">Standard exams · Not adaptive</p>
+          <h2>150-question NCLEX practice exams</h2>
+          <p>Every standard exam is a brand-new mix of ${STD_LEN} questions, shuffled from the whole question bank each time you start. Questions you haven't had in a standard exam come first, so you won't see repeats until you've worked through the bank. The difficulty doesn't change with your answers, and the exam always runs to question ${STD_LEN}.</p>
+          <fieldset class="std-fb"><legend>When do you want to see the answers?</legend>
+            <label><input type="radio" name="std-fb" value="each" ${pref !== 'end' ? 'checked' : ''}><span><b>After each question</b><small>See whether you were right, with the rationale, mnemonic and teaching point, before you move on.</small></span></label>
+            <label><input type="radio" name="std-fb" value="end" ${pref === 'end' ? 'checked' : ''}><span><b>At the end</b><small>Answer all ${STD_LEN} like test day, then review every answer and rationale from your report.</small></span></label>
+          </fieldset>
+          ${QUESTIONS.length ? `<button type="button" class="cat-go" onclick="stdStart((document.querySelector('input[name=std-fb]:checked') || {}).value)">Start a standard exam →</button>` : '<p><i>Loading questions…</i></p>'}
+        </div>
+        <div class="cat-grid">
+          <div class="cat-card"><h3>📏 Always ${STD_LEN} questions</h3><p>No early finish. Balanced across all 8 client-need areas like the NCLEX test plan.</p></div>
+          <div class="cat-card"><h3>🔀 New mix every time</h3><p>Questions and their order are reshuffled automatically for every attempt, including up to ${STD_CASES} unfolding case studies.</p></div>
+          <div class="cat-card"><h3>⏱ 5 hours</h3><p>The clock runs in the top bar. You can end the exam early and still get a report.</p></div>
+          <div class="cat-card"><h3>🧩 All formats</h3><p>Multiple choice, SATA, bow-ties, matrix, drop-downs, highlight, drag &amp; drop and calculations. NGN items earn partial credit.</p></div>
+        </div>
+        <div class="cat-note">💡 Use standard exams to build stamina and learn from the rationales. For a pass/fail readiness estimate, take an <a href="#" onclick="switchTab('cat'); return false" style="text-decoration:underline;font-weight:600">adaptive exam</a>.</div>
+        ${stdHistoryHTML()}`;
+      if (!QUESTIONS.length) loadQuestions().then(() => { if (!stdMode && !stdShowingReport && !document.getElementById('view-std').classList.contains('hidden')) renderStdHome(); }).catch(() => {});
+    }
+    function renderStdReport(r) {
+      const pc = Math.round(r.pct * 100), done = r.n >= r.total, lv = done ? stdLevel(pc) : 'inc';
+      const label = !r.n ? 'No answers yet' : pc >= 70 ? 'Strong result' : pc >= 50 ? 'Getting there' : 'Keep building';
+      const fb = !r.n ? 'You ended the exam before answering any questions.'
+        : pc >= 70 ? 'You earned most of the points on this exam. Keep it up: read the rationale for every question, including the ones you got right, and take an adaptive exam to check your readiness.'
+        : pc >= 50 ? 'You are building a solid base. Focus on your weakest areas below, review the rationales for the questions you missed, then try another standard exam.'
+        : 'This shows where to focus. Review the rationales for the questions you missed, study your weakest areas below with the Mnemonic Vault and Practice, then try another standard exam.';
+      const reason = { done: `You answered all ${r.total} questions.`, time: `Time ran out after ${r.n} of ${r.total} questions.`, quit: `You ended the exam after ${r.n} of ${r.total} questions.` }[r.reason] || '';
+      document.getElementById('std-root').innerHTML = `
+        <div class="cat-report ${lv}">
+          <div class="cat-result">
+            <p class="cat-eyebrow">Standard exam report · ${new Date(r.date).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+            <div class="cat-band">${label}</div>
+            <div class="cat-chance"><span>Points earned</span><em>${pc}%</em></div>
+            <p class="cat-fb">${fb}</p>
+            <div class="cat-stats"><div><b>${r.right}/${r.n}</b><span>fully correct</span></div><div><b>${catFmtTime(r.ms)}</b><span>time used</span></div><div><b>${pc}%</b><span>points earned</span></div></div>
+            <p class="cat-reason">${reason} NGN items earn partial credit, so points earned can be higher than the fully correct count.</p>
+          </div>
+          ${r.n ? `<div class="cat-grid2">${stdBars(r.needs, 'By client need')}${stdBars(r.cats, 'By subject')}</div>${stdBars(r.fmt, 'By question format')}` : ''}
+          <div class="cat-actions">
+            ${r.n ? '<button type="button" class="cat-go" onclick="stdReview()">Review my answers &amp; rationales</button>' : ''}
+            <button type="button" class="cat-alt" onclick="renderStdHome()">Start a new standard exam</button>
+          </div>
+          <p class="cat-small">This score is for practice only. The NCLEX itself is not scored as a percentage; use the adaptive exams to estimate your chance of passing.</p>
+        </div>
+        ${stdHistoryHTML()}`;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    function stdReview() {
+      if (!stdLast || !stdLast.ids.length) return;
+      const list = stdLast.ids.map(id => QUESTIONS.find(q => q.id === id)).filter(Boolean);
+      if (!list.length) return;
+      switchTab('simulator');
+      activeCategory = 'REVIEW';
+      reviewAnswers = stdLast.answers;
+      document.querySelectorAll('.cat-btn').forEach(btn => {
+        const wasHidden = btn.classList.contains('hidden');
+        btn.className = 'cat-btn px-3 py-1 rounded-lg text-xs font-semibold bg-slate-800/70 text-slate-400 hover:text-white border border-slate-700/60' + (wasHidden ? ' hidden' : '');
+      });
+      filteredQuestions = list; currentIndex = 0;
+      populateJumper(); renderCurrentQuestion(); updateSetProgress();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    // Show the student's saved answer, marked, with the rationale (review of a finished standard exam)
+    function stdApplyReview(q) {
+      const a = reviewAnswers[q.id];
+      selectedIndices = [...a.sel];
+      bowSel = JSON.parse(JSON.stringify(a.bow));
+      ngnSel = JSON.parse(JSON.stringify(a.ngn));
+      isSubmitted = true;
+      setSubmitEnabled(false);
+      renderOptions();
+      showRationalePanel(a.right);
     }
 
     // ============================================================================
@@ -3148,7 +3396,7 @@
     }
 
     function revealWithoutSubmitting() {
-      if (isSubmitted) return;
+      if (isSubmitted || catMode || stdMode) return;
       const q = filteredQuestions[currentIndex];
       if (q.type === 'bowtie') {
         const A = q.bowtie.answer;
@@ -3165,6 +3413,11 @@
     function showRationalePanel(isRight, isPeek = false) {
       const q = filteredQuestions[currentIndex];
       if (catMode && !isPeek) { catRecord(q); return; }   // adaptive exam: no feedback until the end
+      if (stdMode && !isPeek) {   // standard exam: save the answer; feedback now or at the end
+        stdRecord(q, isRight);
+        if (std.feedback === 'end') { stdAdvance(); return; }
+        document.body.classList.add('std-sub');
+      }
 
       document.getElementById('rationale-locked').classList.add('hidden');
       document.getElementById('rationale-unlocked').classList.remove('hidden');
@@ -3271,7 +3524,7 @@
     }
 
     function prevQuestion() {
-      if (catMode) return;
+      if (catMode || stdMode) return;
       if (currentIndex > 0) {
         currentIndex--;
         renderCurrentQuestion();
@@ -3280,6 +3533,7 @@
 
     function nextQuestion() {
       if (catMode) return;
+      if (stdMode) { if (isSubmitted) stdAdvance(); return; }
       if (currentIndex < filteredQuestions.length - 1) {
         currentIndex++;
         renderCurrentQuestion();
@@ -3329,7 +3583,7 @@
     }
 
     function switchTab(tab) {
-      ['home', 'simulator', 'cat', 'anim', 'vault', 'labs', 'strategies', 'pricing'].forEach(t => {
+      ['home', 'simulator', 'std', 'cat', 'anim', 'vault', 'labs', 'strategies', 'pricing'].forEach(t => {
         document.getElementById('view-' + t).classList.add('hidden');
         document.getElementById('tab-' + t).className = 'px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all text-slate-400 hover:text-white';
       });
@@ -3338,6 +3592,7 @@
       document.getElementById('filter-bar').style.display = tab === 'simulator' ? 'block' : 'none';
       if (tab === 'vault') renderVault();
       if (tab === 'anim') { renderAnimGrid(); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+      if (tab === 'std' && !stdMode) { if (!stdShowingReport) renderStdHome(); window.scrollTo({ top: 0, behavior: 'smooth' }); }
       if (tab === 'cat' && !catMode) { if (!catShowingReport) renderCatHome(); window.scrollTo({ top: 0, behavior: 'smooth' }); }
       if (tab === 'strategies') { renderStrategyGame(); window.scrollTo({ top: 0, behavior: 'smooth' }); }
       if (tab === 'home') window.scrollTo({ top: 0, behavior: 'smooth' });
