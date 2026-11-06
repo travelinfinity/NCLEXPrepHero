@@ -520,6 +520,139 @@
     .nh-row select { border:1.5px solid var(--nh-line); border-radius:10px; padding:9px 10px; font:500 13px 'Inter',sans-serif; background:#fff; color:var(--nh-ink); min-width:0; max-width:100%; }
     .nh-tip { margin-top:22px; display:flex; gap:12px; align-items:flex-start; background:#FFFBEB; border:1px solid #FDE68A; border-radius:14px; padding:14px 16px; font-size:13.5px; line-height:1.55; color:#78350F; }
     @media (max-width:520px){ .nh-hero{padding:22px 18px} .nh-card{padding:16px} }
+
+    /* ---------- NCLEX-style exam screen (adaptive + standard exams) ---------- */
+    html body.ncx.ncx #app-dashboard { background: #FFFFFF; }
+    html body.ncx.ncx #app-dashboard > header, html body.ncx.ncx #filter-bar, html body.ncx.ncx #mode-nav, html body.ncx.ncx #q-head,
+    html body.ncx.ncx #prev-btn, html body.ncx.ncx #submit-btn, html body.ncx.ncx #key-hint, html body.ncx.ncx #anim-links, html body.ncx.ncx .cat-pill { display: none !important; }
+    html body.ncx.ncx main { max-width: none !important; padding: 0 0 84px !important; }
+    html body.ncx.ncx #view-simulator { display: block; font-family: Arial, Helvetica, sans-serif; color: #111827; }
+    html body.ncx.ncx #cat-bar { display: flex !important; position: sticky; top: 0; z-index: 40; max-width: none; margin: 0; border-radius: 0; padding: 0 18px; min-height: 50px; background: #24486F; box-shadow: 0 1px 0 #16314F; flex-wrap: nowrap; }
+    html body.ncx.ncx .ncx-title { display: inline; font: 700 15px/1.2 Arial, Helvetica, sans-serif; color: #FFFFFF; white-space: nowrap; }
+    html body.ncx.ncx #cat-qnum { font: 400 14px/1.2 Arial, Helvetica, sans-serif; color: #DCE6F2; white-space: nowrap; }
+    html body.ncx.ncx #cat-clock { font: 400 14px/1.2 Arial, Helvetica, sans-serif; color: #FFFFFF; white-space: nowrap; }
+    html body.ncx.ncx #cat-bar button { font: 400 13px/1 Arial, Helvetica, sans-serif; color: #FFFFFF; border: 1px solid #8FA9C6; border-radius: 3px; padding: 7px 10px; background: transparent; }
+    html body.ncx.ncx #cat-bar button:hover { background: #355E8C; }
+    .ncx-title, .ncx-tool { display: none; }
+    html body.ncx.ncx .ncx-tool { display: inline-block; }
+    html body.ncx.ncx #question-col { max-width: 960px; margin: 0 auto; padding: 26px 22px 20px; background: #FFFFFF; border: 0; border-radius: 0; box-shadow: none; }
+    html body.ncx.ncx #q-topic { font: 400 12.5px/1.3 Arial, Helvetica, sans-serif; color: #4B5563; text-transform: none; letter-spacing: 0; margin-bottom: 10px; }
+    html body.ncx.ncx #q-stem { font: 400 16px/1.6 Arial, Helvetica, sans-serif; color: #111827; margin-bottom: 14px; }
+    html body.ncx.ncx #q-instruction { background: transparent; border: 0; padding: 0; margin: 0 0 14px; font: 700 15px/1.45 Arial, Helvetica, sans-serif; color: #111827; }
+    html body.ncx.ncx #q-instruction.ncx-noins { display: none; }
+    html body.ncx.ncx #options-container { margin-bottom: 8px; }
+    /* bottom navigation bar with Next */
+    html body.ncx.ncx #q-actions { position: fixed; left: 0; right: 0; bottom: 0; z-index: 40; margin: 0; padding: 10px 18px; background: #E5E7EB; border-top: 1px solid #9CA3AF; justify-content: flex-end; }
+    html body.ncx.ncx #next-btn { display: inline-flex !important; align-items: center; gap: 8px; background: #24486F; color: #FFFFFF; border: 1px solid #16314F; border-radius: 3px; padding: 10px 26px; font: 700 15px/1 Arial, Helvetica, sans-serif; }
+    html body.ncx.ncx #next-btn:hover { background: #2F5C8C; }
+    html body.ncx.ncx #rationale-col { display: none !important; }
+    html body.ncx.ncx.std-sub #rationale-col { display: block !important; max-width: 960px; margin: 6px auto 0; padding: 0 22px 20px; }
+    html body.ncx.ncx.std-sub #rationale-locked { display: none !important; }
+    /* answer options: plain radio buttons / check boxes */
+    .ncx-opts { display: flex; flex-direction: column; gap: 2px; }
+    .ncx-opt { display: flex; align-items: flex-start; gap: 12px; width: 100%; text-align: left; padding: 9px 10px; border: 1px solid transparent; border-radius: 3px; background: transparent; font: 400 16px/1.45 Arial, Helvetica, sans-serif; color: #111827; cursor: pointer; }
+    .ncx-opt:not(:disabled):hover { background: #F3F4F6; }
+    .ncx-opt:disabled { cursor: default; }
+    .ncx-box { flex: none; width: 19px; height: 19px; margin-top: 2px; border: 2px solid #374151; background: #FFFFFF; display: grid; place-items: center; }
+    .ncx-box.rad { border-radius: 999px; }
+    .ncx-box.chk { border-radius: 2px; }
+    .ncx-opt.on .ncx-box.rad::after { content: ""; width: 9px; height: 9px; border-radius: 999px; background: #111827; }
+    .ncx-opt.on .ncx-box.chk { background: #24486F; border-color: #24486F; }
+    .ncx-opt.on .ncx-box.chk::after { content: ""; width: 5px; height: 10px; border: solid #FFFFFF; border-width: 0 2.5px 2.5px 0; transform: rotate(45deg) translate(-1px, -1px); }
+    .ncx-txt { flex: 1; }
+    .ncx-opt.ok { background: #ECFDF5; border-color: #6EE7B7; }
+    .ncx-opt.bad { background: #FFF1F2; border-color: #FDA4AF; }
+    .ncx-mark { flex: none; font: 700 12px/1.6 Arial, Helvetica, sans-serif; }
+    .ncx-mark.ok { color: #047857; } .ncx-mark.bad { color: #BE123C; }
+    /* case study: client record on the left, item on the right */
+    html body.ncx.ncx #question-col.has-case { position: relative; max-width: 1360px; padding-left: calc(50% + 12px); min-height: calc(100vh - 136px); }
+    html body.ncx.ncx #question-col.has-case > #q-case { position: absolute; top: 26px; left: 22px; width: calc(50% - 40px); max-height: calc(100vh - 160px); overflow: auto; margin: 0; border: 1px solid #9CA3AF; border-radius: 0; background: #FFFFFF; box-shadow: none; }
+    html body.ncx.ncx #q-case .case-steps, html body.ncx.ncx #q-case .case-head > span { display: none; }
+    html body.ncx.ncx #q-case .case-head { position: sticky; top: 0; z-index: 1; padding: 0; background: #E5E7EB; border-bottom: 1px solid #9CA3AF; }
+    html body.ncx.ncx #q-case .case-tabs { gap: 0; }
+    html body.ncx.ncx #q-case .case-tab { font: 400 13.5px/1 Arial, Helvetica, sans-serif; color: #111827; background: #E5E7EB; border: 0; border-right: 1px solid #9CA3AF; border-radius: 0; padding: 11px 14px; }
+    html body.ncx.ncx #q-case .case-tab.on { background: #FFFFFF; color: #111827; font-weight: 700; box-shadow: inset 0 3px 0 #24486F; }
+    html body.ncx.ncx #q-case .case-body { font: 400 15px/1.6 Arial, Helvetica, sans-serif; color: #111827; padding: 14px 16px; animation: none; }
+    html body.ncx.ncx #q-case .case-table th { background: #F3F4F6; color: #111827; }
+    html body.ncx.ncx #q-case .case-table th, html body.ncx.ncx #q-case .case-table td { border-color: #9CA3AF; }
+    @media (max-width: 900px) {
+      html body.ncx.ncx #question-col.has-case { padding-left: 22px; min-height: 0; }
+      html body.ncx.ncx #question-col.has-case > #q-case { position: static; width: auto; max-height: 46vh; margin-bottom: 16px; }
+    }
+    /* bow-tie */
+    .ncx-bt { display: grid; gap: 18px; font-family: Arial, Helvetica, sans-serif; }
+    .ncx-bt-dia { position: relative; display: grid; grid-template-columns: 1fr 1fr 1fr; column-gap: 8%; align-items: center; padding: 6px 0; }
+    .ncx-bt-svg { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+    .ncx-bt-svg line { stroke: #6B7280; stroke-width: 2; vector-effect: non-scaling-stroke; }
+    .ncx-bt-col { display: grid; gap: 34px; position: relative; }
+    .ncx-bt-mid { position: relative; }
+    .ncx-bt-t { position: relative; min-height: 64px; display: flex; align-items: center; justify-content: center; text-align: center; padding: 8px 10px; border: 2px solid #6B7280; background: #FFFFFF; font: 400 14px/1.3 Arial, Helvetica, sans-serif; color: #111827; }
+    .ncx-bt-mid .ncx-bt-t { min-height: 92px; }
+    .ncx-bt-t.over { background: #E8EEF6; border-color: #24486F; }
+    .ncx-bt-t.filled { background: #EEF3F9; border-color: #24486F; cursor: pointer; }
+    .ncx-bt-t.ok { background: #ECFDF5; border-color: #059669; }
+    .ncx-bt-t.bad { background: #FFF1F2; border-color: #E11D48; }
+    .ncx-bt-ph { color: #6B7280; font-size: 13px; font-style: italic; }
+    .ncx-bt-lists { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+    @media (max-width: 640px) { .ncx-bt-lists { grid-template-columns: 1fr; } .ncx-bt-t { min-height: 54px; font-size: 12.5px; } .ncx-bt-col { gap: 18px; } }
+    .ncx-bt-list { display: flex; flex-direction: column; gap: 6px; }
+    .ncx-bt-lh { font: 700 14px/1.3 Arial, Helvetica, sans-serif; color: #111827; padding: 6px 2px; border-bottom: 2px solid #24486F; }
+    .ncx-bt-tok { text-align: left; padding: 8px 10px; border: 1px solid #6B7280; border-radius: 2px; background: #FFFFFF; font: 400 14px/1.35 Arial, Helvetica, sans-serif; color: #111827; cursor: grab; }
+    .ncx-bt-tok:not(:disabled):hover { background: #F3F4F6; }
+    .ncx-bt-tok.used { color: #9CA3AF; border-style: dashed; background: #F9FAFB; cursor: pointer; }
+    .ncx-bt-tok.key { border-color: #059669; box-shadow: inset 4px 0 0 #059669; }
+    .ncx-bt-tok:disabled { cursor: default; }
+    /* other NGN formats, flattened to the exam look */
+    html body.ncx.ncx .ngn-mx-wrap { border: 1px solid #6B7280; border-radius: 0; }
+    html body.ncx.ncx .ngn-mx { font: 400 14.5px/1.4 Arial, Helvetica, sans-serif; color: #111827; }
+    html body.ncx.ncx .ngn-mx th { background: #E5E7EB; font: 700 13.5px/1.25 Arial, Helvetica, sans-serif; color: #111827; border: 1px solid #9CA3AF; }
+    html body.ncx.ncx .ngn-mx td { border: 1px solid #D1D5DB; }
+    html body.ncx.ncx .ngn-cell { width: 20px; height: 20px; border: 2px solid #374151; }
+    html body.ncx.ncx .ngn-cell span { width: 9px; height: 9px; }
+    html body.ncx.ncx .ngn-cell.on { border-color: #111827; } html body.ncx.ncx .ngn-cell.on span { background: #111827; }
+    html body.ncx.ncx .ngn-cloze { font: 400 16px/2.4 Arial, Helvetica, sans-serif; color: #111827; border: 0; padding: 0; background: transparent; }
+    html body.ncx.ncx .ngn-dd { font: 400 15px Arial, Helvetica, sans-serif; color: #111827; background: #FFFFFF; border: 1px solid #6B7280; border-radius: 2px; padding: 4px 6px; }
+    html body.ncx.ncx .ngn-hl { background: #FFFFFF; border: 1px solid #9CA3AF; border-radius: 0; }
+    html body.ncx.ncx .ngn-hl-h { font: 700 14px/1 Arial, Helvetica, sans-serif; color: #111827; }
+    html body.ncx.ncx .ngn-hl p { font: 400 16px/2 Arial, Helvetica, sans-serif; color: #111827; }
+    html body.ncx.ncx .ngn-seg { border-bottom: 0; border-radius: 0; }
+    html body.ncx.ncx .ngn-seg:not(:disabled):hover { background: #FEF9C3; }
+    html body.ncx.ncx .ngn-seg.on { background: #FDE047; }
+    html body.ncx.ncx .ngn-pool, html body.ncx.ncx .ngn-zone, html body.ncx.ncx .ngn-row, html body.ncx.ncx .ngn-chip { border-radius: 2px; font-family: Arial, Helvetica, sans-serif; }
+    html body.ncx.ncx .ngn-pool { background: #F3F4F6; border: 1px solid #9CA3AF; }
+    html body.ncx.ncx .ngn-zone { border: 1px solid #6B7280; }
+    html body.ncx.ncx .ngn-zone-h { font: 700 13.5px/1.2 Arial, Helvetica, sans-serif; color: #111827; text-transform: none; letter-spacing: 0; }
+    html body.ncx.ncx .ngn-chip { border: 1px solid #6B7280; font-size: 14px; }
+    html body.ncx.ncx .ngn-chip.pick { background: #24486F; border-color: #24486F; box-shadow: none; transform: none; }
+    html body.ncx.ncx .ngn-row { border: 1px solid #6B7280; }
+    html body.ncx.ncx .ngn-calc { border: 0; background: transparent; padding: 0; box-shadow: none; }
+    html body.ncx.ncx .ngn-calc label { font: 400 15px/1 Arial, Helvetica, sans-serif; color: #111827; }
+    html body.ncx.ncx .ngn-calc input { border: 1px solid #6B7280; border-radius: 2px; background: #FFFFFF; font: 400 16px/1 Arial, Helvetica, sans-serif; color: #111827; box-shadow: none; }
+    html body.ncx.ncx .ngn-unit { font: 400 15px/1 Arial, Helvetica, sans-serif; color: #111827; }
+    /* on-screen calculator */
+    #ncx-calc { position: fixed; z-index: 60; top: 90px; right: 24px; width: 236px; background: #F3F4F6; border: 1px solid #6B7280; box-shadow: 0 10px 30px rgba(0,0,0,.25); font-family: Arial, Helvetica, sans-serif; user-select: none; }
+    #ncx-calc.hidden { display: none; }
+    #ncx-calc .cc-h { display: flex; justify-content: space-between; align-items: center; padding: 6px 8px; background: #24486F; color: #FFFFFF; font: 700 13px/1 Arial, sans-serif; cursor: move; touch-action: none; }
+    #ncx-calc .cc-h button { background: transparent; border: 0; color: #FFFFFF; font-size: 16px; line-height: 1; cursor: pointer; }
+    #ncx-calc .cc-d { margin: 8px; padding: 8px; background: #FFFFFF; border: 1px solid #9CA3AF; text-align: right; font: 400 22px/1.2 'JetBrains Mono', monospace; color: #111827; overflow: hidden; }
+    #ncx-calc .cc-k { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; padding: 0 8px 8px; }
+    #ncx-calc .cc-k button { padding: 9px 0; border: 1px solid #9CA3AF; background: #FFFFFF; font: 400 15px/1 Arial, sans-serif; color: #111827; cursor: pointer; }
+    #ncx-calc .cc-k button:hover { background: #E5E7EB; }
+    #ncx-calc .cc-k .op { background: #E8EEF6; }
+    #ncx-calc .cc-k .eq { background: #24486F; color: #FFFFFF; }
+    /* exam dialogs */
+    #ncx-modal { position: fixed; inset: 0; z-index: 70; background: rgba(17,24,39,.45); display: grid; place-items: center; padding: 16px; }
+    #ncx-modal.hidden { display: none; }
+    #ncx-modal .nm-box { width: min(440px, 100%); background: #FFFFFF; border: 1px solid #6B7280; box-shadow: 0 16px 40px rgba(0,0,0,.3); font-family: Arial, Helvetica, sans-serif; }
+    #ncx-modal .nm-h { padding: 10px 14px; background: #24486F; color: #FFFFFF; font: 700 14px/1.2 Arial, sans-serif; }
+    #ncx-modal .nm-b { padding: 16px 14px; font: 400 15px/1.5 Arial, sans-serif; color: #111827; }
+    #ncx-modal .nm-f { padding: 10px 14px; background: #F3F4F6; border-top: 1px solid #D1D5DB; text-align: right; }
+    #ncx-modal .nm-f button { background: #24486F; color: #FFFFFF; border: 0; border-radius: 3px; padding: 9px 22px; font: 700 14px/1 Arial, sans-serif; cursor: pointer; }
+    @media (max-width: 640px) {
+      html body.ncx.ncx #cat-bar { flex-wrap: wrap; padding: 6px 12px; gap: 6px; }
+      html body.ncx.ncx .ncx-title { display: none; }
+      html body.ncx.ncx #question-col { padding: 18px 14px; }
+    }
   </style>
 </head>
 <body class="min-h-screen flex flex-col selection:bg-indigo-500 selection:text-white">
@@ -1147,13 +1280,13 @@
       <!-- VIEW 1: EXAM SIMULATOR (SPLIT SCREEN) -->
       <section id="view-simulator" class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         <div id="cat-bar" class="cat-bar">
-          <div class="cat-bar-l"><span class="cat-pill" id="cat-pill">🎯 Adaptive exam</span><b id="cat-qnum">Question 1</b></div>
-          <div class="cat-bar-r"><span id="cat-clock" title="Time remaining">⏱ 5:00:00</span><button type="button" onclick="stdMode ? stdEndEarly() : catEndEarly()">End exam</button></div>
+          <div class="cat-bar-l"><span class="cat-pill" id="cat-pill">🎯 Adaptive exam</span><span class="ncx-title">NCLEX-RN Practice Exam</span><b id="cat-qnum">Question 1</b></div>
+          <div class="cat-bar-r"><button type="button" class="ncx-tool" onclick="ncxCalcToggle()" title="On-screen calculator">Calculator</button><span id="cat-clock" title="Time remaining">⏱ 5:00:00</span><button type="button" onclick="stdMode ? stdEndEarly() : catEndEarly()">End exam</button></div>
         </div>
         
         <!-- Left Column: Question Stem & Interactive Choices -->
         <div id="question-col" class="lg:col-span-6 bg-slate-900 border border-slate-800 rounded-2xl p-5 lg:p-6 shadow-xl">
-          <div class="flex items-center justify-between gap-2 pb-4 mb-4 border-b border-slate-800">
+          <div id="q-head" class="flex items-center justify-between gap-2 pb-4 mb-4 border-b border-slate-800">
             <div class="flex flex-wrap items-center gap-2">
               <span id="q-number-badge" class="font-mono text-xs font-bold px-2.5 py-1 rounded-md bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
                 Q1
@@ -1188,7 +1321,7 @@
 
           <div id="options-container" class="space-y-2.5 mb-6"></div>
 
-          <div class="flex items-center justify-between gap-3 pt-4 border-t border-slate-800">
+          <div id="q-actions" class="flex items-center justify-between gap-3 pt-4 border-t border-slate-800">
             <button onclick="prevQuestion()" id="prev-btn" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold transition">
               ← Previous
             </button>
@@ -2279,6 +2412,9 @@
         (q.type === 'bowtie' ? 'Drag to complete the bow-tie: 1 condition, 2 actions and 2 parameters to monitor.'
           : NGN_HOW[q.type] ? NGN_HOW[q.type](q)
           : q.type === 'sata' ? 'Select ALL answers that apply.' : 'Select the best answer below.') + prevNote;
+      const insBox = document.getElementById('q-instruction');
+      if (ncxOn()) { const t = ncxInstruction(q); insBox.querySelector('span').textContent = t; insBox.classList.toggle('ncx-noins', !t); }
+      else insBox.classList.remove('ncx-noins');
 
       const isBookmarked = userStats.bookmarks.includes(q.id);
       const bmBtn = document.getElementById('bookmark-btn');
@@ -2300,6 +2436,7 @@
       const container = document.getElementById('options-container');
       if (q.type === 'bowtie') { renderBowtie(); return; }
       if (NGN_UI.includes(q.type)) { renderNgn(); return; }
+      if (ncxOn()) { ncxRenderOptions(q); return; }
 
       container.innerHTML = q.options.map((optText, idx) => {
         const isSelected = selectedIndices.includes(idx);
@@ -2379,6 +2516,7 @@
     function bowAnswer(q) { const A = q.bowtie.answer; return { condition: [A.condition], actions: A.actions, parameters: A.parameters }; }
 
     function renderBowtie() {
+      if (ncxOn()) return ncxRenderBowtie();
       const q = filteredQuestions[currentIndex], b = q.bowtie, ans = bowAnswer(q);
       const slot = (grp, i) => {
         const idx = bowSel[grp][i];
@@ -2450,6 +2588,7 @@
 
     function renderCase(q) {
       const box = document.getElementById('q-case');
+      document.getElementById('question-col').classList.toggle('has-case', !!q.caseData);
       if (!q.caseData) { box.classList.add('hidden'); box.innerHTML = ''; return; }
       const tabs = q.caseData.tabs;
       const cs = q.ngn && q.ngn.case;
@@ -2722,6 +2861,122 @@
 
 
     // ============================================================================
+    // NCLEX-STYLE EXAM SCREEN: plain layout, Next button, client record on the left, bow-tie diagram, calculator
+    // ============================================================================
+    function ncxOn() { return document.body.classList.contains('ncx'); }
+    function ncxEnter() { document.body.classList.add('ncx'); ncxBreaks = {}; }
+    function ncxExit() { document.body.classList.remove('ncx'); ncxCalcToggle(false); ncxNoticeClose(); }
+    let ncxBreaks = {};
+    function ncxBreakCheck(start) {   // optional breaks, like the real exam (after 2 h and 3.5 h); the clock keeps running
+      const el = Date.now() - start;
+      [[2, '2 hours'], [3.5, '3.5 hours']].forEach(([h, label]) => {
+        if (el >= h * 3600000 && !ncxBreaks[h]) { ncxBreaks[h] = 1; ncxNotice(`You have been testing for ${label}. You may take an optional break now. The exam clock keeps running during breaks.`, 'Optional break'); }
+      });
+    }
+    function ncxNotice(msg, title) {
+      document.getElementById('nm-h').textContent = title || 'Notice';
+      document.getElementById('nm-b').textContent = msg;
+      document.getElementById('ncx-modal').classList.remove('hidden');
+      setTimeout(() => { const b = document.getElementById('nm-ok'); if (b) b.focus(); }, 0);
+    }
+    function ncxNoticeClose() { const m = document.getElementById('ncx-modal'); if (m) m.classList.add('hidden'); }
+    function examNeedAnswer(msg) {   // NCLEX won't move on until the item is fully answered
+      if (ncxOn()) ncxNotice(msg, 'Answer required'); else alert(msg);
+    }
+    function ncxInstruction(q) {
+      if (q.type === 'bowtie') return 'Complete the diagram by dragging from the choices below to specify what condition the client is most likely experiencing, 2 actions the nurse should take to address that condition, and 2 parameters the nurse should monitor to assess the client\'s progress.';
+      if (q.type === 'sata') return 'Select all that apply.';
+      if (q.type === 'selectn') return `Select ${q.ngn.n}.`;
+      if (q.type === 'matrix') return 'For each row, click to select the option that applies.';
+      if (q.type === 'cloze') return 'Complete the following sentence(s) by choosing from the list(s) of options.';
+      if (q.type === 'highlight') return 'Click to highlight the findings that apply. Click again to remove a highlight.';
+      if (q.type === 'dragdrop') return 'Drag each option to the correct place. Each option may be used once.';
+      if (q.type === 'order') return 'Place the steps in the correct order, first step at the top. Drag the options or use the arrows.';
+      if (q.type === 'calc') return `Fill in the blank. Record your answer${q.ngn.unit ? ' in ' + q.ngn.unit : ''}${q.ngn.decimals ? `, rounded to ${q.ngn.decimals} decimal place${q.ngn.decimals > 1 ? 's' : ''}` : ''}.`;
+      return '';
+    }
+    function ncxRenderOptions(q) {
+      const multi = q.type === 'sata' || q.type === 'selectn';
+      document.getElementById('options-container').innerHTML = `<div class="ncx-opts" role="${multi ? 'group' : 'radiogroup'}">` + q.options.map((t, i) => {
+        const on = selectedIndices.includes(i), key = q.correct.includes(i);
+        let cls = 'ncx-opt' + (on ? ' on' : ''), mark = '';
+        if (isSubmitted) {
+          if (key) { cls += ' ok'; mark = '<span class="ncx-mark ok">Correct answer</span>'; }
+          else if (on) { cls += ' bad'; mark = '<span class="ncx-mark bad">Your answer</span>'; }
+        }
+        return `<button type="button" class="${cls}" onclick="selectOption(${i})" role="${multi ? 'checkbox' : 'radio'}" aria-checked="${on}" ${isSubmitted ? 'disabled' : ''}><span class="ncx-box ${multi ? 'chk' : 'rad'}" aria-hidden="true"></span><span class="ncx-txt">${escapeHTML(t)}</span>${mark}</button>`;
+      }).join('') + '</div>';
+    }
+    function ncxRenderBowtie() {
+      const q = filteredQuestions[currentIndex], b = q.bowtie, ans = bowAnswer(q);
+      const LBL = { actions: 'Action to Take', condition: 'Condition Most Likely Experiencing', parameters: 'Parameter to Monitor' };
+      const tgt = (grp, i) => {
+        const idx = bowSel[grp][i];
+        let cls = 'ncx-bt-t' + (idx != null ? ' filled' : '');
+        if (isSubmitted && idx != null) cls += ans[grp].includes(idx) ? ' ok' : ' bad';
+        return `<div class="${cls}" ondragover="bowOver(event,'${grp}')" ondragleave="this.classList.remove('over')" ondrop="bowDrop(event,'${grp}',${i})" ${(!isSubmitted && idx != null) ? `onclick="bowClear('${grp}',${i})" title="Click to remove"` : ''}>${idx == null ? `<span class="ncx-bt-ph">${LBL[grp]}</span>` : escapeHTML(b[BT_KEY[grp]][idx])}</div>`;
+      };
+      const list = (grp, title) => `<div class="ncx-bt-list"><div class="ncx-bt-lh">${title}</div>${b[BT_KEY[grp]].map((t, i) => {
+        const used = bowSel[grp].includes(i);
+        let cls = 'ncx-bt-tok' + (used ? ' used' : '');
+        if (isSubmitted && ans[grp].includes(i)) cls += ' key';
+        return `<button type="button" class="${cls}" draggable="${!isSubmitted && !used}" ondragstart="bowDrag(event,'${grp}',${i})" ondragend="document.querySelectorAll('.ncx-bt-t.over').forEach(x=>x.classList.remove('over'))" onclick="pickBow('${grp}',${i})" ${isSubmitted ? 'disabled' : ''} title="${used ? 'Click to remove from the diagram' : 'Drag to the diagram, or click to place'}">${escapeHTML(t)}</button>`;
+      }).join('')}</div>`;
+      document.getElementById('options-container').innerHTML = `
+        <div class="ncx-bt">
+          <div class="ncx-bt-dia">
+            <svg class="ncx-bt-svg" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><line x1="28.5" y1="25" x2="35.5" y2="50"/><line x1="28.5" y1="75" x2="35.5" y2="50"/><line x1="64.5" y1="50" x2="71.5" y2="25"/><line x1="64.5" y1="50" x2="71.5" y2="75"/></svg>
+            <div class="ncx-bt-col">${tgt('actions', 0)}${tgt('actions', 1)}</div>
+            <div class="ncx-bt-mid">${tgt('condition', 0)}</div>
+            <div class="ncx-bt-col">${tgt('parameters', 0)}${tgt('parameters', 1)}</div>
+          </div>
+          <div class="ncx-bt-lists">${list('actions', 'Actions to Take')}${list('condition', 'Potential Conditions')}${list('parameters', 'Parameters to Monitor')}</div>
+        </div>`;
+    }
+    // simple on-screen calculator (immediate execution, like a basic exam calculator)
+    let ccS = { acc: null, op: null, cur: '0', fresh: true };
+    function ccShow() { document.getElementById('cc-d').textContent = ccS.cur; }
+    function ccApply(a, b, op) {
+      const r = op === '+' ? a + b : op === '-' ? a - b : op === '*' ? a * b : op === '/' ? (b === 0 ? NaN : a / b) : b;
+      return isFinite(r) ? parseFloat(r.toPrecision(12)) : NaN;
+    }
+    function cc(k) {
+      const s = ccS;
+      if (s.cur === 'Error' && k !== 'C') return;
+      if (/^[0-9]$/.test(k)) { s.cur = (s.fresh || s.cur === '0') ? k : (s.cur.length < 14 ? s.cur + k : s.cur); s.fresh = false; }
+      else if (k === '.') { if (s.fresh) { s.cur = '0.'; s.fresh = false; } else if (!s.cur.includes('.')) s.cur += '.'; }
+      else if (k === 'C') ccS = { acc: null, op: null, cur: '0', fresh: true };
+      else if (k === '±') { if (s.cur !== '0') s.cur = s.cur.startsWith('-') ? s.cur.slice(1) : '-' + s.cur; }
+      else if (k === '√') { const v = parseFloat(s.cur); s.cur = v < 0 ? 'Error' : String(parseFloat(Math.sqrt(v).toPrecision(12))); s.fresh = true; }
+      else if ('+-*/='.includes(k)) {
+        const v = parseFloat(s.cur);
+        if (s.op && !s.fresh) { const r = ccApply(s.acc, v, s.op); s.cur = isNaN(r) ? 'Error' : String(r); s.acc = r; }
+        else if (!s.op || k === '=') s.acc = v;
+        s.op = k === '=' ? null : k; s.fresh = true;
+      }
+      ccShow();
+    }
+    function ncxCalcToggle(force) {
+      const el = document.getElementById('ncx-calc');
+      if (!el) return;
+      const show = force == null ? el.classList.contains('hidden') : force;
+      el.classList.toggle('hidden', !show);
+    }
+    function ncxCalcDragStart(e) {
+      if (e.target.closest('button')) return;
+      const el = document.getElementById('ncx-calc'), r = el.getBoundingClientRect(), dx = e.clientX - r.left, dy = e.clientY - r.top;
+      const move = ev => { el.style.left = Math.max(0, Math.min(window.innerWidth - r.width, ev.clientX - dx)) + 'px'; el.style.top = Math.max(0, Math.min(window.innerHeight - 40, ev.clientY - dy)) + 'px'; el.style.right = 'auto'; };
+      const up = () => { document.removeEventListener('pointermove', move); document.removeEventListener('pointerup', up); };
+      document.addEventListener('pointermove', move); document.addEventListener('pointerup', up);
+    }
+    document.addEventListener('keydown', e => {
+      if (!ncxOn()) return;
+      const m = document.getElementById('ncx-modal');
+      if (m && !m.classList.contains('hidden') && (e.key === 'Enter' || e.key === 'Escape')) { e.preventDefault(); e.stopImmediatePropagation(); ncxNoticeClose(); return; }
+      if (e.altKey && (e.key === 'n' || e.key === 'N')) { e.preventDefault(); nextQuestion(); }   // Alt+N = Next
+    }, true);
+
+    // ============================================================================
     // ADAPTIVE EXAMS (CAT): the bank is split into separate exams of 150 questions; each is 85–150 long, ends early on a confident pass, 5 hours
     // ============================================================================
     const CAT_MIN = 85, CAT_MAX = 150, CAT_TIME_MS = 5 * 60 * 60 * 1000, CAT_CUT = 0;   // passing standard on the ability (logit) scale
@@ -2857,6 +3112,8 @@
         max, min: Math.min(CAT_MIN, max), start: Date.now() };
       catMode = true; catShowingReport = false;
       document.body.classList.add('cat-on');
+      ncxEnter();
+      document.getElementById('next-btn').textContent = 'Next ►';
       document.getElementById('submit-btn').textContent = 'Submit answer';
       switchTab('simulator');
       clearInterval(catTimer);
@@ -2867,7 +3124,8 @@
       if (!catMode) return;
       const left = Math.max(0, CAT_TIME_MS - (Date.now() - cat.start));
       const h = Math.floor(left / 3600000), m = Math.floor(left / 60000) % 60, sec = Math.floor(left / 1000) % 60;
-      document.getElementById('cat-clock').textContent = `⏱ ${h}:${String(m).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
+      document.getElementById('cat-clock').textContent = `Time remaining ${h}:${String(m).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
+      ncxBreakCheck(cat.start);
       if (left <= 0) catFinish('time');
     }
     function catNext() {
@@ -2882,7 +3140,7 @@
       document.getElementById('q-topic').textContent = cs ? `Case study · Question ${cs.step} of ${cs.steps}` : '';
       const ins = document.querySelector('#q-instruction span');
       ins.textContent = ins.textContent.replace(/ \(You (got|missed)[^)]*\)$/, '');
-      document.getElementById('cat-qnum').textContent = `Exam ${cat.exam} · Question ${cat.items.length + 1} of ${cat.max}`;
+      document.getElementById('cat-qnum').textContent = `Exam ${cat.exam} · Question ${cat.items.length + 1}`;
       window.scrollTo({ top: 0 });
     }
     function catRecord(q) {
@@ -2912,6 +3170,8 @@
       catMode = false;
       clearInterval(catTimer);
       document.body.classList.remove('cat-on');
+      ncxExit();
+      document.getElementById('next-btn').textContent = 'Next →';
       document.getElementById('submit-btn').textContent = 'Submit & Reveal Rationale + Mnemonic';
       const n = cat.items.length;
       let p = n ? catPhi((cat.theta - CAT_CUT) / cat.se) : 0;
@@ -3124,6 +3384,7 @@
       std = { list: stdBuild(), i: 0, items: [], s: [], answers: {}, feedback, start: Date.now() };
       stdMode = true; stdShowingReport = false;
       document.body.classList.add('std-on');
+      ncxEnter();
       document.body.classList.toggle('std-end', feedback === 'end');
       document.getElementById('cat-pill').textContent = '📝 Standard exam';
       document.getElementById('submit-btn').textContent = feedback === 'end' ? 'Submit answer' : 'Submit & see the answer';
@@ -3136,7 +3397,8 @@
       if (!stdMode) return;
       const left = Math.max(0, STD_TIME_MS - (Date.now() - std.start));
       const h = Math.floor(left / 3600000), m = Math.floor(left / 60000) % 60, sec = Math.floor(left / 1000) % 60;
-      document.getElementById('cat-clock').textContent = `⏱ ${h}:${String(m).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
+      document.getElementById('cat-clock').textContent = `Time remaining ${h}:${String(m).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
+      ncxBreakCheck(std.start);
       if (left <= 0) stdFinish('time');
     }
     function stdShow() {
@@ -3150,7 +3412,7 @@
       const ins = document.querySelector('#q-instruction span');
       ins.textContent = ins.textContent.replace(/ \(You (got|missed)[^)]*\)$/, '');
       document.getElementById('cat-qnum').textContent = `Question ${std.i + 1} of ${std.list.length}`;
-      document.getElementById('next-btn').textContent = std.i + 1 >= std.list.length ? 'Finish exam →' : 'Next question →';
+      document.getElementById('next-btn').textContent = std.i + 1 >= std.list.length ? 'Finish ►' : 'Next ►';
       window.scrollTo({ top: 0 });
     }
     function stdRecord(q, isRight) {
@@ -3180,6 +3442,7 @@
       stdMode = false;
       clearInterval(stdTimer);
       document.body.classList.remove('std-on', 'std-end', 'std-sub');
+      ncxExit();
       document.getElementById('cat-pill').textContent = '🎯 Adaptive exam';
       document.getElementById('next-btn').textContent = 'Next →';
       document.getElementById('submit-btn').textContent = 'Submit & Reveal Rationale + Mnemonic';
@@ -3351,7 +3614,7 @@
       const q = filteredQuestions[currentIndex];
       if (q.type === 'bowtie') {
         if (bowSel.condition.length < 1 || bowSel.actions.length < 2 || bowSel.parameters.length < 2) {
-          alert('Complete the bow-tie first: 1 condition, 2 actions and 2 parameters to monitor.');
+          examNeedAnswer('Complete the bow-tie first: 1 condition, 2 actions and 2 parameters to monitor.');
           return;
         }
         isSubmitted = true;
@@ -3366,7 +3629,7 @@
       }
       if (NGN_UI.includes(q.type) || q.type === 'selectn') {
         const missing = ngnMissing(q);
-        if (missing) { alert(missing); return; }
+        if (missing) { examNeedAnswer(missing); return; }
         isSubmitted = true;
         setSubmitEnabled(false);
         const sc = ngnScore(q);
@@ -3378,7 +3641,7 @@
         return;
       }
       if (selectedIndices.length === 0) {
-        alert('Please select at least one option first (or use Study Mode Peek on the right).');
+        examNeedAnswer(ncxOn() ? 'Please select an answer before moving to the next item.' : 'Please select at least one option first (or use Study Mode Peek on the right).');
         return;
       }
       isSubmitted = true;
@@ -3532,6 +3795,7 @@
     }
 
     function nextQuestion() {
+      if (ncxOn() && !isSubmitted) { submitAnswer(); return; }   // exam screen: Next submits the answer, like the NCLEX
       if (catMode) return;
       if (stdMode) { if (isSubmitted) stdAdvance(); return; }
       if (currentIndex < filteredQuestions.length - 1) {
@@ -3780,10 +4044,24 @@
       const letterIdx = LETTERS.map(l => l.toLowerCase()).indexOf(k);
       if (q.type !== 'bowtie' && !NGN_UI.includes(q.type) && letterIdx > -1 && letterIdx < q.options.length) { selectOption(letterIdx); e.preventDefault(); }
       else if (k === 'enter') { isSubmitted ? nextQuestion() : submitAnswer(); e.preventDefault(); }
-      else if (k === 'arrowright') nextQuestion();
+      else if (k === 'arrowright') { if (!ncxOn()) nextQuestion(); }
       else if (k === 'arrowleft') prevQuestion();
       else if (k === 'f') toggleBookmark();
     });
   </script>
+  <div id="ncx-calc" class="hidden" role="dialog" aria-label="Calculator">
+    <div class="cc-h" onpointerdown="ncxCalcDragStart(event)"><span>Calculator</span><button type="button" onclick="ncxCalcToggle(false)" aria-label="Close calculator">×</button></div>
+    <div class="cc-d" id="cc-d">0</div>
+    <div class="cc-k">
+      <button type="button" onclick="cc('C')">C</button><button type="button" onclick="cc('±')">±</button><button type="button" onclick="cc('√')">√</button><button type="button" class="op" onclick="cc('/')">÷</button>
+      <button type="button" onclick="cc('7')">7</button><button type="button" onclick="cc('8')">8</button><button type="button" onclick="cc('9')">9</button><button type="button" class="op" onclick="cc('*')">×</button>
+      <button type="button" onclick="cc('4')">4</button><button type="button" onclick="cc('5')">5</button><button type="button" onclick="cc('6')">6</button><button type="button" class="op" onclick="cc('-')">−</button>
+      <button type="button" onclick="cc('1')">1</button><button type="button" onclick="cc('2')">2</button><button type="button" onclick="cc('3')">3</button><button type="button" class="op" onclick="cc('+')">+</button>
+      <button type="button" onclick="cc('0')" style="grid-column: span 2">0</button><button type="button" onclick="cc('.')">.</button><button type="button" class="eq" onclick="cc('=')">=</button>
+    </div>
+  </div>
+  <div id="ncx-modal" class="hidden" role="alertdialog" aria-modal="true" aria-labelledby="nm-h">
+    <div class="nm-box"><div class="nm-h" id="nm-h">Notice</div><div class="nm-b" id="nm-b"></div><div class="nm-f"><button type="button" id="nm-ok" onclick="ncxNoticeClose()">OK</button></div></div>
+  </div>
 </body>
 </html>
